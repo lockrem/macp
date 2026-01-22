@@ -1,0 +1,40 @@
+{
+  "name": "macp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-Agent Communication Platform",
+  "workspaces": [
+    "packages/*",
+    "infrastructure",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:migrate": "turbo run db:migrate --filter=@macp/core",
+    "db:seed": "turbo run db:seed --filter=@macp/core",
+    "infra:deploy": "cd infrastructure && cdk deploy --all",
+    "infra:diff": "cd infrastructure && cdk diff",
+    "infra:synth": "cd infrastructure && cdk synth"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.18.1",
+    "dotenv": "^17.2.3",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.0",
+    "tsx": "^4.7.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
+    "ws": "^8.19.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@8.14.0"
+}

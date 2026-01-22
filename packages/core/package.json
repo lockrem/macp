@@ -1,0 +1,47 @@
+{
+  "name": "@macp/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "dependencies": {
+    "@macp/shared": "workspace:*",
+    "fastify": "^4.26.0",
+    "@fastify/websocket": "^9.0.0",
+    "@fastify/cors": "^9.0.0",
+    "ioredis": "^5.3.0",
+    "drizzle-orm": "^0.29.0",
+    "postgres": "^3.4.0",
+    "zod": "^3.22.0",
+    "ulid": "^2.3.0",
+    "pino": "^8.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
+    "drizzle-kit": "^0.20.0"
+  }
+}
