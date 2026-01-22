@@ -114,10 +114,11 @@ class MemoryService: ObservableObject {
 
     /// Smart fact lookup - returns facts based on queries with context
     func lookupFacts(queries: [String], includeContext: Bool = true) async -> FactLookupResponse? {
+        let request = FactLookupRequest(queries: queries, includeContext: includeContext)
         do {
             let response: FactLookupResponse = try await APIClient.shared.post(
                 "/api/memories/lookup",
-                body: ["queries": queries, "includeContext": includeContext]
+                body: request
             )
             return response
         } catch {
@@ -273,6 +274,21 @@ class MemoryService: ObservableObject {
         }
 
         return AgentMemory(stores: stores)
+    }
+
+    /// Saves memory for an agent (legacy - stores not supported in new system)
+    /// This is a no-op in the new category-based system
+    func saveMemory(_ memory: AgentMemory, for agent: LocalAgent) async {
+        // The new system extracts facts from conversations automatically
+        // Manual memory saving is deprecated
+        print("[Memory] saveMemory called - this is deprecated in the new category-based system")
+    }
+
+    /// Clears memory for an agent (legacy)
+    func clearMemory(for agent: LocalAgent) async {
+        // Clear local caches
+        invalidateAllCaches()
+        print("[Memory] clearMemory called - caches cleared")
     }
 
     /// Clears all caches

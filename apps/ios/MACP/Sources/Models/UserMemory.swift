@@ -191,6 +191,12 @@ struct FactAvailability: Codable {
     let preview: String?
 }
 
+/// Request for smart fact lookup
+struct FactLookupRequest: Codable {
+    let queries: [String]
+    let includeContext: Bool
+}
+
 /// Response from smart fact lookup
 struct FactLookupResponse: Codable {
     let facts: [String: FactValue]

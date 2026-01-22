@@ -29,6 +29,7 @@
 		A1000020 /* SettingsSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020 /* SettingsSyncService.swift */; };
 		A1000021 /* ArchiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000021 /* ArchiveService.swift */; };
 		A1000022 /* ArchivesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000022 /* ArchivesListView.swift */; };
+		A1000023 /* UserMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000023 /* UserMemory.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +58,7 @@
 		B1000020 /* SettingsSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncService.swift; sourceTree = "<group>"; };
 		B1000021 /* ArchiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveService.swift; sourceTree = "<group>"; };
 		B1000022 /* ArchivesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchivesListView.swift; sourceTree = "<group>"; };
+		B1000023 /* UserMemory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMemory.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +109,7 @@
 			children = (
 				B1000003 /* Models.swift */,
 				B1000016 /* LocalAgent.swift */,
+				B1000023 /* UserMemory.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -255,6 +258,7 @@
 				A1000020 /* SettingsSyncService.swift in Sources */,
 				A1000021 /* ArchiveService.swift in Sources */,
 				A1000022 /* ArchivesListView.swift in Sources */,
+				A1000023 /* UserMemory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
