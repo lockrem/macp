@@ -18,26 +18,32 @@ struct ContentView: View {
 struct MainTabView: View {
     @EnvironmentObject var deepLinkHandler: DeepLinkHandler
     @EnvironmentObject var agentStorage: AgentStorageService
+    @EnvironmentObject var apiKeyService: APIKeyService
     @EnvironmentObject var conversationService: ConversationService
     @EnvironmentObject var archiveService: ArchiveService
+    @EnvironmentObject var memoryService: MemoryService
 
     var body: some View {
         TabView {
+            // Home - Chat with your agents (PRIMARY)
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+
+            // Multi-agent conversations
             ConversationsListView()
                 .tabItem {
-                    Label("Conversations", systemImage: "bubble.left.and.bubble.right")
+                    Label("Collab", systemImage: "bubble.left.and.bubble.right")
                 }
 
+            // Archives
             ArchivesListView()
                 .tabItem {
-                    Label("Archives", systemImage: "archivebox")
+                    Label("History", systemImage: "archivebox")
                 }
 
-            AgentSettingsView()
-                .tabItem {
-                    Label("My Agents", systemImage: "person.2.circle")
-                }
-
+            // Settings
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
