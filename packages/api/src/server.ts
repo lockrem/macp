@@ -260,6 +260,40 @@ export async function createServer(config: ServerConfig) {
       ON CONFLICT (id) DO NOTHING
     `);
 
+    // Grounding preferences tables
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS user_grounding_preferences (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        preset TEXT NOT NULL DEFAULT 'balanced',
+        agent_response_words INTEGER NOT NULL DEFAULT 15,
+        host_response_words INTEGER NOT NULL DEFAULT 20,
+        participation_style TEXT NOT NULL DEFAULT 'balanced',
+        response_style TEXT NOT NULL DEFAULT 'conversational',
+        formality TEXT NOT NULL DEFAULT 'professional',
+        memory_sharing TEXT NOT NULL DEFAULT 'balanced',
+        custom_system_prompt_suffix TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS agent_grounding_overrides (
+        id TEXT PRIMARY KEY,
+        agent_id TEXT NOT NULL,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        word_limit INTEGER,
+        response_style TEXT,
+        formality TEXT,
+        memory_sharing TEXT,
+        custom_system_prompt_suffix TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_agent_grounding_overrides_user ON agent_grounding_overrides(user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_agent_grounding_overrides_agent ON agent_grounding_overrides(agent_id)`);
+
     app.log.info('Database migrations applied');
   } catch (err) {
     app.log.error({ err }, 'Failed to run migrations (non-fatal)');
