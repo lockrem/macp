@@ -307,7 +307,7 @@ struct AgentEditorView: View {
 
         // Load grounding overrides
         Task {
-            if let overrides = await groundingService.fetchAgentOverrides(agentId: agent.id) {
+            if let overrides = await groundingService.fetchAgentOverrides(agentId: agent.id.uuidString) {
                 useCustomBehavior = overrides.hasOverrides
                 if let wl = overrides.wordLimit { wordLimit = Double(wl) }
                 if let rs = overrides.responseStyle { responseStyle = rs }
@@ -320,7 +320,7 @@ struct AgentEditorView: View {
     private func saveAgent() {
         isSaving = true
 
-        var agentId: String
+        var agentIdString: String
 
         if var agent = existingAgent {
             agent.name = name
@@ -332,7 +332,7 @@ struct AgentEditorView: View {
             agent.voiceId = voiceId
             agent.voiceSpeed = voiceSpeed
             agentStorage.updateAgent(agent)
-            agentId = agent.id
+            agentIdString = agent.id.uuidString
         } else {
             let newAgent = LocalAgent(
                 name: name,
@@ -345,7 +345,7 @@ struct AgentEditorView: View {
                 voiceSpeed: voiceSpeed
             )
             agentStorage.addAgent(newAgent)
-            agentId = newAgent.id
+            agentIdString = newAgent.id.uuidString
         }
 
         // Save grounding overrides
@@ -357,10 +357,10 @@ struct AgentEditorView: View {
                     formality: formality,
                     memorySharing: memorySharing
                 )
-                _ = await groundingService.updateAgentOverrides(agentId: agentId, overrides: overrides)
+                _ = await groundingService.updateAgentOverrides(agentId: agentIdString, overrides: overrides)
             } else {
                 // Remove overrides if custom behavior is disabled
-                _ = await groundingService.deleteAgentOverrides(agentId: agentId)
+                _ = await groundingService.deleteAgentOverrides(agentId: agentIdString)
             }
 
             await SettingsSyncService.shared.syncAgents()

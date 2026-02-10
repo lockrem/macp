@@ -86,7 +86,7 @@ class GroundingService: ObservableObject {
 
     func resetToDefaults() async -> Bool {
         do {
-            let _: UpdateResponse = try await api.post("/api/grounding/preferences/reset", body: EmptyBody())
+            let _: UpdateResponse = try await api.post("/api/grounding/preferences/reset", body: GroundingEmptyBody())
             await fetchPreferences()
             return true
         } catch {
@@ -241,7 +241,7 @@ private struct PresetRequest: Codable {
     let preset: String
 }
 
-private struct EmptyBody: Codable {}
+private struct GroundingEmptyBody: Codable {}
 
 private struct UpdateResponse: Codable {
     let success: Bool
