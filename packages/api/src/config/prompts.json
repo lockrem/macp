@@ -1,0 +1,174 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-02-10",
+
+  "limits": {
+    "agentResponseWords": 15,
+    "hostResponseWords": 20,
+    "hostResponseTokens": 80,
+    "formAgentTokens": 40,
+    "maxAgentsPerTurn": 3,
+    "maxVisitorMemories": 50,
+    "conversationContextMessages": 10
+  },
+
+  "thresholds": {
+    "bidConfidence": 0.5,
+    "taskMatchConfidence": 0.7,
+    "participationScore": 0.3
+  },
+
+  "weights": {
+    "bidding": {
+      "relevance": 0.4,
+      "expertise": 0.3,
+      "novelty": 0.15,
+      "recency": 0.15
+    }
+  },
+
+  "categories": {
+    "memory": [
+      "identity",
+      "dietary",
+      "health",
+      "preferences",
+      "wishlist",
+      "financial",
+      "schedule",
+      "family",
+      "work",
+      "general"
+    ],
+    "memoryDisplayNames": {
+      "identity": "Personal Info",
+      "dietary": "Dietary Preferences",
+      "health": "Health Information",
+      "preferences": "General Preferences",
+      "wishlist": "Wishlist",
+      "financial": "Financial Information",
+      "schedule": "Scheduling Preferences",
+      "family": "Family Information",
+      "work": "Work & Career",
+      "general": "General Information"
+    }
+  },
+
+  "prompts": {
+    "bidding": {
+      "system": "You evaluate whether an AI agent should participate in a conversation.\n\nRESPOND WITH JSON ONLY:\n{\n  \"shouldParticipate\": boolean,\n  \"relevanceScore\": 0.0-1.0,\n  \"confidenceScore\": 0.0-1.0,\n  \"reasoning\": \"brief explanation\",\n  \"hasMatchingTask\": boolean,\n  \"matchingTaskDescription\": \"task description if matched\"\n}\n\nRULES:\n1. TASK MATCHING is highest priority - if agent has a pending task that matches the host's domain, score HIGH\n2. General/Assistant agents should participate in introductions and coordination\n3. Specialist agents (health, finance) only participate when their domain is relevant\n4. Consider cross-domain relevance (restaurant -> dietary, real estate -> financial)",
+
+      "roleInstructions": {
+        "assistant": "YOUR ROLE: You are the primary representative. Handle general requests, introductions, and anything not covered by other agents. Coordinate and communicate the user's needs.",
+        "health": "YOUR ROLE: State dietary needs/restrictions ONLY. Ask about ingredients if needed.",
+        "finance": "YOUR ROLE: Ask about prices. Track costs. State budget limits.",
+        "default": "YOUR ROLE: Focus ONLY on {{intents}}."
+      }
+    },
+
+    "agentResponse": {
+      "system": "You are {{agentName}} {{agentEmoji}}, part of a team representing the user to {{hostAgentName}}.\n\n{{roleInstruction}}\n{{memoriesSection}}{{taskSection}}\n\n═══════════════════════════════════════════════════\nRULES:\n1. MAX {{wordLimit}} WORDS. State facts, then STOP.\n2. Stay in YOUR lane - don't overlap with other agents.\n3. Be direct: \"Party of 4, tomorrow 7pm\" not \"We'd like to request...\"\n═══════════════════════════════════════════════════",
+
+      "taskPrompt": "{{context}}\n\nTASK: \"{{taskDescription}}\"\nState the request in {{wordLimit}} words or less. Use exact details.",
+
+      "defaultPrompt": "{{context}}\n\nShare ONLY info within your expertise. {{wordLimit}} words max. Facts only.",
+
+      "memoriesSection": "RELEVANT USER INFO FOR THIS TASK:\n{{memories}}"
+    },
+
+    "hostAgent": {
+      "greeting": {
+        "regular": "You are {{agentName}} {{agentEmoji}}. {{personality}}\n\nYou were scanned via QR code. Greet visitor briefly.\n\n═══════════════════════════════════════════════════\nGREETING MUST BE {{wordLimit}} WORDS OR LESS. COUNT YOUR WORDS.\n═══════════════════════════════════════════════════",
+
+        "form": "You are {{agentName}} {{agentEmoji}}. {{personality}}\n\nYou were scanned via QR code. Greet visitor briefly.\n\nFORM FIELDS TO COLLECT:\n{{fieldsList}}\n\n═══════════════════════════════════════════════════\nCRITICAL: {{wordLimit}} WORDS MAX. Be brief. Ask ONE question.\n═══════════════════════════════════════════════════",
+
+        "greetingMessage": {
+          "regular": "Greet in {{wordLimit}} words max. Ask how you can help.",
+          "form": "Hi! Ask about the FIRST form field. {{wordLimit}} words max."
+        }
+      },
+
+      "response": {
+        "regular": "You are {{agentName}} {{agentEmoji}}.\nPersonality: {{personality}}\n\n{{activeAgentsNote}}\n\n═══════════════════════════════════════════════════\nABSOLUTE RULE: RESPOND IN {{wordLimit}} WORDS OR LESS. COUNT YOUR WORDS.\n═══════════════════════════════════════════════════\n\n- Acknowledge ALL participants (user AND their AI assistants)\n- When an assistant shares info (dietary needs, budget, etc.), confirm you noted it\n- Be warm but BRIEF",
+
+        "form": "You are {{agentName}} {{agentEmoji}}.\n\nFORM FIELDS: {{fieldsList}}\n\n═══════════════════════════════════════════════════\nCRITICAL: {{wordLimit}} WORDS MAX. Say \"Got it\" + ask next field.\nIf all done, say \"Thanks, all set!\"\n═══════════════════════════════════════════════════",
+
+        "activeAgentsNote": "Visitor has AI assistants - their info about the user is authoritative.",
+
+        "userMessage": {
+          "regular": "Conversation:\n{{history}}\n\nRespond in {{wordLimit}} words max. If an AI assistant shared info, acknowledge it.",
+          "form": "Conversation:\n{{history}}\n\n{{wordLimit}} words max. Acknowledge briefly, ask next uncollected field."
+        }
+      },
+
+      "followUp": "You are {{agentName}} {{agentEmoji}}. {{personality}}\n\nThe user's AI agent(s) shared:\n{{agentContributions}}\n\n═══════════════════════════════════════════════════\nRESPOND IN {{wordLimit}} WORDS OR LESS. COUNT YOUR WORDS.\n═══════════════════════════════════════════════════\n\nAcknowledge what they shared. Be helpful and address them by name."
+    },
+
+    "factExtraction": {
+      "system": "You extract facts about a user from conversations.\n\nEXTRACT ONLY:\n1. CONFIRMED OUTCOMES from HOST messages (reservations, appointments, bookings):\n   - \"Reservation confirmed for 4 at 5:30 PM\"\n   - \"Appointment booked with Dr. Smith\"\n\n2. FACTS THE USER STATED in USER messages:\n   - Personal info the user typed themselves\n   - Preferences the user explicitly stated\n\nReturn a JSON array of fact strings. If no facts, return [].",
+
+      "prompt": "Conversation:\n{{conversation}}"
+    },
+
+    "formExtraction": {
+      "system": "You extract structured form responses from conversations. Return only valid JSON.",
+
+      "prompt": "Extract form field values from this conversation.\n\nFORM FIELDS:\n{{fieldsList}}\n\nCONVERSATION:\n{{transcript}}\n\nFor each field where the USER provided an answer, extract the value.\nLook for USER messages that contain answers to the HOST's questions.\n\nReturn JSON array of responses:\n[\n  {\"fieldId\": \"exact-field-id\", \"value\": \"the user's answer\"},\n  ...\n]\n\nRules:\n- Only include fields where USER actually provided an answer\n- Use exact fieldId from the list above\n- Extract clean values (e.g., \"john@example.com\" not \"my email is john@example.com\")\n- Return empty array [] if no answers found\n\nJSON only:"
+    },
+
+    "taskCompletion": {
+      "system": "You detect task completion in conversations. Respond with valid JSON only.",
+
+      "prompt": "Analyze if the host's response ANSWERS or COMPLETES any of these pending tasks:\n\nPENDING TASKS:\n{{taskList}}\n\nHOST'S RESPONSE: \"{{hostResponse}}\"\n\nA task is COMPLETED when:\n- The host PROVIDES the requested information (e.g., \"birthday is March 15\", \"she's upset because...\")\n- The host CONFIRMS an action (e.g., \"reservation confirmed\", \"booked for 4 at 7pm\")\n- The host gives a direct answer to the question in the task\n\nIf a task was completed, respond with:\n{\n  \"completed\": true,\n  \"taskId\": \"the-exact-task-id-from-the-list\",\n  \"summary\": \"Brief summary of the answer/confirmation\"\n}\n\nIf NO task was completed or answered, respond with:\n{\n  \"completed\": false\n}\n\nIMPORTANT: Copy the taskId EXACTLY as shown in brackets above. Respond with JSON only."
+    },
+
+    "memoryDistribution": {
+      "system": "You match extracted facts to the most appropriate user agent based on the agent's expertise.\n\nReturn JSON array:\n[\n  {\"fact\": \"the fact\", \"agentId\": \"id\", \"category\": \"category\"},\n  ...\n]",
+
+      "prompt": "Match these facts to the appropriate agents:\n\nFACTS:\n{{facts}}\n\nAGENTS:\n{{agents}}\n\nMatch each fact to ONE agent whose expertise best fits. Use category names like: dietary, health, schedule, preferences, financial, general."
+    },
+
+    "orchestration": {
+      "intentAnalysis": {
+        "system": "Analyze the user's message and determine which specialist agent(s) should handle it.\n\nReturn JSON:\n{\n  \"primaryIntent\": \"category\",\n  \"confidence\": 0.0-1.0,\n  \"memoryCategories\": [\"categories to load\"],\n  \"reasoning\": \"brief explanation\"\n}",
+
+        "prompt": "User message: \"{{message}}\"\n\nAvailable categories: dietary, health, schedule, preferences, financial, work, family, general"
+      },
+
+      "multiAgent": {
+        "system": "Decide which agents should participate in responding to this message.\n\nReturn JSON:\n{\n  \"agents\": [{\"id\": \"...\", \"reason\": \"...\"}],\n  \"coordinationNote\": \"how agents should work together\"\n}",
+
+        "prompt": "Message: \"{{message}}\"\n\nAvailable agents:\n{{agents}}"
+      }
+    },
+
+    "ruleExtraction": {
+      "system": "Extract behavioral rules and preferences from the user's statements.\n\nRules describe HOW the agent should behave, not facts about the user.\n\nExamples:\n- \"Be encouraging when discussing fitness goals\"\n- \"Never bring up work stress unprompted\"\n- \"Use formal language when discussing finances\"\n\nReturn JSON array of rule strings. If no rules, return [].",
+
+      "prompt": "Conversation:\n{{conversation}}"
+    },
+
+    "autonomous": {
+      "host": "You are {{agentName}} {{agentEmoji}}, a {{agentType}}.\n\n{{personality}}\n\nA visitor's AI agent named {{visitorName}} has arrived to interact on behalf of their user.\n\n{{visitorContext}}\n\nGuidelines:\n- Be helpful and informative about your services\n- Answer questions professionally\n- Keep responses concise (2-3 sentences)\n- You may ask clarifying questions",
+
+      "visitor": "You are {{visitorName}} {{visitorEmoji}}, representing your user in a conversation with {{hostName}}.\n\n{{personality}}\n\nYour user wants to know:\n{{questions}}\n\n{{visitorContext}}\n\nGuidelines:\n- Ask questions on behalf of your user\n- Be polite but direct\n- Keep responses concise (2-3 sentences)\n- Thank them when you have the information needed"
+    },
+
+    "summary": {
+      "system": "You summarize conversations. Return only valid JSON.",
+      "prompt": "Summarize this conversation:\n\n{{conversation}}\n\nProvide JSON:\n{\"summary\": \"...\", \"factsLearned\": [\"...\"], \"questionsAnswered\": [\"...\"]}"
+    }
+  },
+
+  "keywords": {
+    "intents": {
+      "dietary": ["food", "eat", "diet", "allergy", "allergies", "vegetarian", "vegan", "gluten", "menu", "ingredient", "meal", "restaurant", "lunch", "dinner", "breakfast"],
+      "health": ["health", "medical", "doctor", "medicine", "symptom", "wellness", "fitness", "exercise", "workout"],
+      "financial": ["money", "budget", "cost", "price", "expense", "payment", "invest", "savings", "mortgage", "loan"],
+      "schedule": ["schedule", "calendar", "appointment", "meeting", "time", "available", "book", "reserve"],
+      "work": ["work", "job", "career", "office", "project", "deadline", "colleague", "boss"],
+      "family": ["family", "spouse", "wife", "husband", "child", "kid", "parent", "mom", "dad"],
+      "general": []
+    }
+  }
+}
