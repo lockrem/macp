@@ -101,7 +101,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Get current user's grounding preferences
    */
   app.get('/api/grounding/preferences', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -136,7 +136,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Update user's grounding preferences
    */
   app.put('/api/grounding/preferences', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -179,7 +179,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Apply a preset to user's preferences
    */
   app.post('/api/grounding/preferences/preset', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -208,7 +208,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Reset user's preferences to defaults
    */
   app.post('/api/grounding/preferences/reset', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -227,7 +227,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Get overrides for a specific agent
    */
   app.get('/api/grounding/agents/:agentId', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -255,7 +255,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Set overrides for a specific agent
    */
   app.put('/api/grounding/agents/:agentId', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -314,7 +314,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Remove all overrides for a specific agent
    */
   app.delete('/api/grounding/agents/:agentId', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -335,7 +335,7 @@ export async function groundingRoutes(app: FastifyInstance) {
    * Useful for debugging what settings will actually be used
    */
   app.get('/api/grounding/effective', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+    const userId = request.user?.userId;
     const { agentId } = request.query as { agentId?: string };
 
     // Allow anonymous access for debugging (returns platform defaults)
