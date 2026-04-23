@@ -1,17 +1,17 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as ecs from 'aws-cdk-lib/aws-ecs';
-import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as elasticache from 'aws-cdk-lib/aws-elasticache';
-import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2';
+import * as apigatewayIntegrations from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { Construct } from 'constructs';
 
 export interface ApiStackProps extends cdk.StackProps {
@@ -21,7 +21,6 @@ export interface ApiStackProps extends cdk.StackProps {
   database: rds.DatabaseCluster;
   redis: elasticache.CfnCacheCluster;
   vpc: ec2.Vpc;
-  repository: ecr.IRepository;
   memoryBucket: s3.IBucket;
   archiveBucket: s3.IBucket;
   archiveKey: kms.IKey;
@@ -30,22 +29,17 @@ export interface ApiStackProps extends cdk.StackProps {
 }
 
 export class ApiStack extends cdk.Stack {
-  public readonly service: ecsPatterns.ApplicationLoadBalancedFargateService;
-  public readonly cluster: ecs.Cluster;
+  public readonly apiFunction: lambda.Function;
+  public readonly httpApi: apigateway.HttpApi;
+  public readonly webSocketApi: apigateway.WebSocketApi;
+  public readonly webSocketFunction: lambda.Function;
 
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    // ECS Cluster
-    this.cluster = new ecs.Cluster(this, 'Cluster', {
-      clusterName: `${props.prefix}-cluster`,
-      vpc: props.vpc,
-      containerInsights: true,
-    });
-
     // Log Group
-    const logGroup = new logs.LogGroup(this, 'ServiceLogs', {
-      logGroupName: `/ecs/${props.prefix}-api`,
+    const logGroup = new logs.LogGroup(this, 'ApiLogs', {
+      logGroupName: `/aws/lambda/${props.prefix}-api`,
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -74,133 +68,190 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    // Security group for the service
-    const serviceSG = new ec2.SecurityGroup(this, 'ServiceSG', {
+    // Security group for Lambda in VPC
+    const lambdaSG = new ec2.SecurityGroup(this, 'LambdaSG', {
       vpc: props.vpc,
-      securityGroupName: `${props.prefix}-service-sg`,
-      description: 'Security group for MACP API service',
+      securityGroupName: `${props.prefix}-lambda-sg`,
+      description: 'Security group for MACP API Lambda',
     });
 
-    // Allow service to access database (defined in database stack's security group)
-    serviceSG.addEgressRule(
+    // Allow Lambda to access database
+    lambdaSG.addEgressRule(
       ec2.Peer.anyIpv4(),
       ec2.Port.tcp(5432),
       'Allow outbound to PostgreSQL'
     );
 
-    // Allow service to access Redis
-    serviceSG.addEgressRule(
+    // Allow Lambda to access Redis
+    lambdaSG.addEgressRule(
       ec2.Peer.anyIpv4(),
       ec2.Port.tcp(6379),
       'Allow outbound to Redis'
     );
 
-    // Fargate Service with ALB
-    this.service = new ecsPatterns.ApplicationLoadBalancedFargateService(
-      this,
-      'Service',
-      {
-        cluster: this.cluster,
-        serviceName: `${props.prefix}-api`,
-        cpu: 512,
-        memoryLimitMiB: 1024,
-        desiredCount: 2,
-        publicLoadBalancer: true,
-        taskSubnets: {
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-        },
-        securityGroups: [serviceSG],
-        taskImageOptions: {
-          image: ecs.ContainerImage.fromEcrRepository(props.repository, 'latest'),
-          containerPort: 3000,
-          logDriver: ecs.LogDrivers.awsLogs({
-            streamPrefix: 'api',
-            logGroup,
-          }),
-          environment: {
-            NODE_ENV: 'production',
-            REDIS_HOST: props.redis.attrRedisEndpointAddress,
-            REDIS_PORT: props.redis.attrRedisEndpointPort,
-            COGNITO_USER_POOL_ID: props.userPool.userPoolId,
-            COGNITO_CLIENT_ID: props.userPoolClient.userPoolClientId,
-            MEMORY_BUCKET: props.memoryBucket.bucketName,
-            ARCHIVE_BUCKET: props.archiveBucket.bucketName,
-            ARCHIVE_TABLE: props.archiveTable.tableName,
-          },
-          secrets: {
-            DATABASE_URL: ecs.Secret.fromSecretsManager(databaseSecret, 'connectionString'),
-            ANTHROPIC_API_KEY: ecs.Secret.fromSecretsManager(apiKeysSecret, 'ANTHROPIC_API_KEY'),
-            OPENAI_API_KEY: ecs.Secret.fromSecretsManager(apiKeysSecret, 'OPENAI_API_KEY'),
-            JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
-          },
-        },
-        circuitBreaker: {
-          rollback: true,
-        },
-        enableExecuteCommand: true, // Allow ECS Exec for debugging
-      }
+    // Allow HTTPS outbound for AWS services and external APIs
+    lambdaSG.addEgressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(443),
+      'Allow outbound HTTPS'
     );
 
-    // Health check configuration
-    this.service.targetGroup.configureHealthCheck({
-      path: '/health',
-      healthyHttpCodes: '200',
-      interval: cdk.Duration.seconds(30),
-      timeout: cdk.Duration.seconds(5),
-      healthyThresholdCount: 2,
-      unhealthyThresholdCount: 3,
+    // Lambda function for API (bundled with esbuild)
+    this.apiFunction = new lambda.Function(this, 'ApiFunction', {
+      functionName: `${props.prefix}-api`,
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'dist/lambda.handler',
+      code: lambda.Code.fromAsset('../lambda-deploy'),
+      memorySize: 1024,
+      timeout: cdk.Duration.seconds(30),
+      vpc: props.vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      securityGroups: [lambdaSG],
+      logGroup,
+      environment: {
+        NODE_ENV: 'production',
+        PREFIX: props.prefix,
+        REDIS_HOST: props.redis.attrRedisEndpointAddress,
+        REDIS_PORT: props.redis.attrRedisEndpointPort,
+        COGNITO_USER_POOL_ID: props.userPool.userPoolId,
+        COGNITO_CLIENT_ID: props.userPoolClient.userPoolClientId,
+        MEMORY_BUCKET: props.memoryBucket.bucketName,
+        ARCHIVE_BUCKET: props.archiveBucket.bucketName,
+        ARCHIVE_TABLE: props.archiveTable.tableName,
+        PUBLIC_AGENTS_USE_DB: 'true',
+        PUBLIC_AGENTS_DUAL_WRITE: 'true',
+      },
     });
 
-    // Auto-scaling
-    const scaling = this.service.service.autoScaleTaskCount({
-      minCapacity: 2,
-      maxCapacity: 10,
+    // Add secrets to Lambda environment (via IAM, not direct injection)
+    databaseSecret.grantRead(this.apiFunction);
+    apiKeysSecret.grantRead(this.apiFunction);
+    jwtSecret.grantRead(this.apiFunction);
+
+    // Grant permissions for S3 buckets
+    props.memoryBucket.grantReadWrite(this.apiFunction);
+    props.archiveBucket.grantReadWrite(this.apiFunction);
+    props.archiveKey.grantEncryptDecrypt(this.apiFunction);
+    props.archiveTable.grantReadWriteData(this.apiFunction);
+
+    // HTTP API Gateway
+    this.httpApi = new apigateway.HttpApi(this, 'HttpApi', {
+      apiName: `${props.prefix}-api`,
+      description: 'MACP API Gateway',
+      corsPreflight: {
+        allowOrigins: ['*'],
+        allowMethods: [apigateway.CorsHttpMethod.ANY],
+        allowHeaders: ['*'],
+      },
     });
 
-    scaling.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: 70,
-      scaleInCooldown: cdk.Duration.seconds(60),
-      scaleOutCooldown: cdk.Duration.seconds(60),
-    });
-
-    scaling.scaleOnMemoryUtilization('MemoryScaling', {
-      targetUtilizationPercent: 80,
-      scaleInCooldown: cdk.Duration.seconds(60),
-      scaleOutCooldown: cdk.Duration.seconds(60),
-    });
-
-    // Grant permissions
-    databaseSecret.grantRead(this.service.taskDefinition.taskRole);
-    apiKeysSecret.grantRead(this.service.taskDefinition.taskRole);
-    jwtSecret.grantRead(this.service.taskDefinition.taskRole);
-
-    // Allow task to use Secrets Manager
-    this.service.taskDefinition.taskRole.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        actions: ['secretsmanager:GetSecretValue'],
-        resources: [databaseSecret.secretArn, apiKeysSecret.secretArn, jwtSecret.secretArn],
-      })
+    // Lambda integration
+    const lambdaIntegration = new apigatewayIntegrations.HttpLambdaIntegration(
+      'LambdaIntegration',
+      this.apiFunction
     );
 
-    // Grant read/write access to memory bucket
-    props.memoryBucket.grantReadWrite(this.service.taskDefinition.taskRole);
+    // Add routes - catch all to Lambda
+    this.httpApi.addRoutes({
+      path: '/{proxy+}',
+      methods: [apigateway.HttpMethod.ANY],
+      integration: lambdaIntegration,
+    });
 
-    // Grant access to archive resources
-    props.archiveBucket.grantReadWrite(this.service.taskDefinition.taskRole);
-    props.archiveKey.grantEncryptDecrypt(this.service.taskDefinition.taskRole);
-    props.archiveTable.grantReadWriteData(this.service.taskDefinition.taskRole);
+    // Root path
+    this.httpApi.addRoutes({
+      path: '/',
+      methods: [apigateway.HttpMethod.ANY],
+      integration: lambdaIntegration,
+    });
+
+    // =========================================================================
+    // WebSocket API for real-time autonomous conversations
+    // =========================================================================
+
+    // Log group for WebSocket Lambda
+    const wsLogGroup = new logs.LogGroup(this, 'WebSocketLogs', {
+      logGroupName: `/aws/lambda/${props.prefix}-websocket`,
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Lambda for WebSocket handling (longer timeout for conversations)
+    this.webSocketFunction = new lambda.Function(this, 'WebSocketFunction', {
+      functionName: `${props.prefix}-websocket`,
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'dist/websocket-handler.handler',
+      code: lambda.Code.fromAsset('../lambda-deploy'),
+      memorySize: 1024,
+      timeout: cdk.Duration.minutes(5), // Longer timeout for conversations
+      vpc: props.vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      securityGroups: [lambdaSG],
+      logGroup: wsLogGroup,
+      environment: {
+        NODE_ENV: 'production',
+        PREFIX: props.prefix,
+        REDIS_HOST: props.redis.attrRedisEndpointAddress,
+        REDIS_PORT: props.redis.attrRedisEndpointPort,
+        MEMORY_BUCKET: props.memoryBucket.bucketName,
+        PUBLIC_AGENTS_USE_DB: 'true',
+      },
+    });
+
+    // Grant WebSocket Lambda access to S3
+    props.memoryBucket.grantReadWrite(this.webSocketFunction);
+
+    // Grant WebSocket Lambda access to database secret for agent lookups
+    databaseSecret.grantRead(this.webSocketFunction);
+
+    // WebSocket API
+    this.webSocketApi = new apigateway.WebSocketApi(this, 'WebSocketApi', {
+      apiName: `${props.prefix}-websocket`,
+      description: 'MACP WebSocket API for real-time conversations',
+      connectRouteOptions: {
+        integration: new apigatewayIntegrations.WebSocketLambdaIntegration(
+          'ConnectIntegration',
+          this.webSocketFunction
+        ),
+      },
+      disconnectRouteOptions: {
+        integration: new apigatewayIntegrations.WebSocketLambdaIntegration(
+          'DisconnectIntegration',
+          this.webSocketFunction
+        ),
+      },
+      defaultRouteOptions: {
+        integration: new apigatewayIntegrations.WebSocketLambdaIntegration(
+          'DefaultIntegration',
+          this.webSocketFunction
+        ),
+      },
+    });
+
+    // WebSocket Stage
+    const wsStage = new apigateway.WebSocketStage(this, 'WebSocketStage', {
+      webSocketApi: this.webSocketApi,
+      stageName: 'v1',
+      autoDeploy: true,
+    });
+
+    // Grant Lambda permission to send messages to WebSocket clients
+    this.webSocketFunction.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['execute-api:ManageConnections'],
+      resources: [
+        `arn:aws:execute-api:${this.region}:${this.account}:${this.webSocketApi.apiId}/${wsStage.stageName}/*`,
+      ],
+    }));
 
     // Outputs
     new cdk.CfnOutput(this, 'ApiUrl', {
-      value: `https://${this.service.loadBalancer.loadBalancerDnsName}`,
+      value: this.httpApi.apiEndpoint,
       description: 'API URL',
       exportName: `${props.prefix}-api-url`,
-    });
-
-    new cdk.CfnOutput(this, 'WebSocketUrl', {
-      value: `wss://${this.service.loadBalancer.loadBalancerDnsName}/ws`,
-      description: 'WebSocket URL',
-      exportName: `${props.prefix}-ws-url`,
     });
 
     new cdk.CfnOutput(this, 'ApiKeysSecretArn', {
@@ -209,16 +260,22 @@ export class ApiStack extends cdk.Stack {
       exportName: `${props.prefix}-api-keys-secret-arn`,
     });
 
-    new cdk.CfnOutput(this, 'ClusterArn', {
-      value: this.cluster.clusterArn,
-      description: 'ECS Cluster ARN',
-      exportName: `${props.prefix}-cluster-arn`,
+    new cdk.CfnOutput(this, 'LambdaFunctionArn', {
+      value: this.apiFunction.functionArn,
+      description: 'Lambda Function ARN',
+      exportName: `${props.prefix}-lambda-arn`,
     });
 
-    new cdk.CfnOutput(this, 'ServiceArn', {
-      value: this.service.service.serviceArn,
-      description: 'ECS Service ARN',
-      exportName: `${props.prefix}-service-arn`,
+    new cdk.CfnOutput(this, 'LambdaFunctionName', {
+      value: this.apiFunction.functionName,
+      description: 'Lambda Function Name',
+      exportName: `${props.prefix}-lambda-name`,
+    });
+
+    new cdk.CfnOutput(this, 'WebSocketUrl', {
+      value: wsStage.url,
+      description: 'WebSocket URL for real-time conversations',
+      exportName: `${props.prefix}-websocket-url`,
     });
   }
 }

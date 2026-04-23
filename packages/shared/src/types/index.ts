@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
 export interface Agent {
-  id: string;
+  id: string;                    // UUID assigned at creation
   ownerId: string;
   displayName: string;
   provider: AgentProvider;
@@ -17,6 +17,18 @@ export interface Agent {
   status: AgentStatus;
   createdAt: Date;
   lastActiveAt: Date;
+
+  // Sharing settings (no separate publish step needed)
+  isShareable?: boolean;         // Can others interact with this agent via QR/link?
+  shareSettings?: AgentShareSettings;
+}
+
+export interface AgentShareSettings {
+  allowDirectChat: boolean;      // Visitors can chat directly with agent
+  allowAgentToAgent: boolean;    // Visitor's agent can talk to this agent
+  allowAccompanied: boolean;     // Visitor + their agent can interact together
+  greeting?: string;             // Custom greeting for public visitors
+  viewCount?: number;            // Analytics
 }
 
 export type AgentProvider = 'anthropic' | 'openai' | 'gemini' | 'groq' | 'google' | 'custom';
@@ -714,3 +726,435 @@ export interface FactAvailabilityResponse {
    */
   unavailable: string[];
 }
+
+// -----------------------------------------------------------------------------
+// Rules Types - Per-Agent User Preferences & Instructions
+// -----------------------------------------------------------------------------
+
+/**
+ * A single rule/preference for an agent
+ * Rules are explicit instructions from the user that modify agent behavior
+ */
+export interface AgentRule {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * All rules for a specific agent
+ * Stored at: rules/{userId}/{agentId}.json
+ */
+export interface AgentRules {
+  userId: string;
+  agentId: string;
+  agentName: string;
+  rules: AgentRule[];
+  lastUpdated: string;
+}
+
+/**
+ * Index file tracking all agents with rules for a user
+ * Stored at: rules/{userId}/_index.json
+ */
+export interface RulesIndex {
+  userId: string;
+  agents: AgentRulesMeta[];
+  totalRules: number;
+  lastUpdated: string;
+}
+
+/**
+ * Metadata about an agent's rules (stored in index)
+ */
+export interface AgentRulesMeta {
+  agentId: string;
+  agentName: string;
+  ruleCount: number;
+  lastUpdated: string;
+}
+
+// -----------------------------------------------------------------------------
+// Public Agent Types - Shareable Agent URLs
+// -----------------------------------------------------------------------------
+
+/**
+ * A published agent that can be accessed via a public URL
+ * Stored at: public-agents/{agentId}.json
+ */
+export interface PublishedAgent {
+  agentId: string;                  // Primary key - the agent's UUID
+  ownerId: string;
+  ownerName?: string;
+  recordType?: 'agent' | 'form';    // 'agent' (default) or 'form' for smart forms
+
+  // Agent config snapshot
+  name: string;
+  emoji: string;
+  description: string;
+  personality: string;
+  greeting: string;
+  accentColor: string;
+  introductionGreeting: string;
+  introductionQuestions: PublicIntroductionQuestion[];
+
+  // Voice configuration for TTS
+  voiceId?: string;                 // ElevenLabs voice ID (e.g., "ErXwobaYiN019PkySvjV" for Antoni)
+  voiceSpeed?: number;              // Speech speed 0.75-1.25 (default: 1.0)
+
+  // Sharing settings
+  isActive: boolean;
+  allowDirectChat: boolean;         // Anonymous user talks directly
+  allowAgentToAgent: boolean;       // Visitor's agent talks to this agent
+  allowAccompaniedChat: boolean;    // User + their agent interact together
+
+  // Metadata
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+}
+
+/**
+ * Introduction question for public agents
+ */
+export interface PublicIntroductionQuestion {
+  id: string;
+  question: string;
+  followUp?: string;
+  extractsMemory: string[];
+  extractsRules: boolean;
+}
+
+/**
+ * Index file tracking a user's published agents
+ * Stored at: public-agents/_index/{userId}.json
+ */
+export interface PublishedAgentsIndex {
+  userId: string;
+  agents: PublishedAgentMeta[];
+  totalPublished: number;
+  lastUpdated: string;
+}
+
+/**
+ * Metadata about a published agent (stored in user's index)
+ */
+export interface PublishedAgentMeta {
+  agentId: string;                  // Primary key
+  name: string;
+  emoji: string;
+  isActive: boolean;
+  viewCount: number;
+  sessionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Interaction mode for public agent sessions
+ */
+export type PublicAgentInteractionMode = 'direct' | 'agent_to_agent' | 'accompanied';
+
+/**
+ * A session between a visitor and a public agent
+ * Stored at: public-sessions/{sessionId}.json
+ */
+export interface PublicAgentSession {
+  sessionId: string;
+  agentId: string;                  // The public agent's ID
+  mode: PublicAgentInteractionMode;
+
+  // Visitor info
+  visitorId: string;              // Anonymous device ID
+  visitorUserId?: string;         // If signed in
+  visitorAgentId?: string;        // For agent-to-agent/accompanied modes
+  visitorAgentName?: string;
+
+  // Conversation
+  messages: PublicSessionMessage[];
+
+  // Auto-extracted data from conversation
+  extractedData: ExtractedSessionData;
+
+  // Status
+  status: 'active' | 'completed' | 'abandoned';
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+}
+
+/**
+ * A message in a public agent session
+ */
+export interface PublicSessionMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'visitor_agent' | 'system';
+  content: string;
+  timestamp: string;
+  metadata?: {
+    tokensUsed?: number;
+    latencyMs?: number;
+  };
+}
+
+/**
+ * Automatic extraction from conversation content
+ */
+export interface ExtractedSessionData {
+  preferences: Record<string, string>;  // e.g., { "dietary": "vegetarian", "communication": "email" }
+  memories: string[];                    // Key facts about the visitor
+  summary: string;                       // Brief summary of the conversation
+  completedTopics: string[];             // Topics discussed/resolved
+}
+
+/**
+ * Request to publish an agent
+ */
+export interface PublishAgentRequest {
+  allowDirectChat: boolean;
+  allowAgentToAgent: boolean;
+  allowAccompaniedChat: boolean;
+  introductionGreeting?: string;
+  introductionQuestions?: PublicIntroductionQuestion[];
+}
+
+/**
+ * Request to create a public session
+ */
+export interface CreatePublicSessionRequest {
+  mode: PublicAgentInteractionMode;
+  visitorId: string;
+  visitorUserId?: string;
+  visitorAgentId?: string;
+  visitorAgentName?: string;
+}
+
+/**
+ * Request to send a message in a public session
+ */
+export interface PublicSessionMessageRequest {
+  sessionId: string;
+  content: string;
+  role?: 'user' | 'visitor_agent';  // Who's sending: the user directly or their agent
+}
+
+// -----------------------------------------------------------------------------
+// Marketplace Types - Agent Discovery & Subscriptions
+// -----------------------------------------------------------------------------
+
+/**
+ * A marketplace listing for an agent
+ * Extends PublishedAgent with marketplace-specific fields
+ */
+export interface MarketplaceAgent {
+  // Core identification
+  agentId: string;
+
+  // Creator info
+  creatorId: string;             // "macp" for MACP Originals
+  creatorName: string;           // "MACP Team" or creator's display name
+  creatorVerified: boolean;      // true for verified creators
+  creatorAvatarUrl?: string;
+
+  // Agent config (from PublishedAgent)
+  name: string;
+  emoji: string;
+  description: string;
+  personality: string;
+  greeting: string;
+  accentColor: string;
+  introductionGreeting?: string;
+  introductionQuestions?: PublicIntroductionQuestion[];
+
+  // Marketplace categorization
+  category: MarketplaceCategory;
+  subcategory?: string;
+  tags: string[];
+
+  // Pricing
+  pricing: AgentPricing;
+
+  // Engagement metrics
+  subscriberCount: number;
+  sessionCount: number;
+  rating: number;                // 0-5 stars
+  reviewCount: number;
+
+  // Visibility
+  featured: boolean;             // Highlighted in marketplace
+  isActive: boolean;
+  isMACPOriginal: boolean;       // true for MACP-hosted agents
+
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+/**
+ * Marketplace categories
+ */
+export type MarketplaceCategory =
+  | 'health'
+  | 'fitness'
+  | 'productivity'
+  | 'finance'
+  | 'education'
+  | 'wellness'
+  | 'lifestyle'
+  | 'professional'
+  | 'entertainment'
+  | 'companion';
+
+/**
+ * Category metadata for display
+ */
+export interface MarketplaceCategoryInfo {
+  id: MarketplaceCategory;
+  name: string;
+  emoji: string;
+  description: string;
+  agentCount: number;
+}
+
+/**
+ * Pricing configuration for marketplace agents
+ */
+export interface AgentPricing {
+  type: 'free' | 'subscription' | 'per_session' | 'freemium';
+  price?: number;                // In cents (e.g., 999 = $9.99)
+  currency?: string;             // ISO currency code, default USD
+  trialDays?: number;            // Free trial period
+  freeSessionsPerMonth?: number; // For freemium model
+}
+
+/**
+ * Creator profile for the marketplace
+ */
+export interface AgentCreator {
+  creatorId: string;
+  displayName: string;
+  bio?: string;
+  avatarUrl?: string;
+  verified: boolean;
+  verificationBadges: VerificationBadge[];
+
+  // Stats
+  agentCount: number;
+  totalSubscribers: number;
+  averageRating: number;
+
+  // Links
+  websiteUrl?: string;
+  socialLinks?: Record<string, string>;
+
+  createdAt: string;
+}
+
+/**
+ * Verification badges for creators
+ */
+export type VerificationBadge =
+  | 'macp_official'       // MACP team
+  | 'identity_verified'   // Identity confirmed
+  | 'professional'        // Professional credentials
+  | 'top_creator'         // High engagement/ratings
+  | 'early_adopter';      // Early platform adopter
+
+/**
+ * User's subscription to a marketplace agent
+ */
+export interface AgentSubscription {
+  subscriptionId: string;
+  userId: string;
+  agentId: string;
+
+  // Status
+  status: 'active' | 'cancelled' | 'expired' | 'trial';
+
+  // Pricing at time of subscription
+  pricingType: AgentPricing['type'];
+  priceAtSubscription?: number;
+
+  // Usage
+  sessionsUsed: number;
+  sessionsLimit?: number;        // For per-session or freemium
+
+  // Dates
+  subscribedAt: string;
+  expiresAt?: string;
+  cancelledAt?: string;
+  trialEndsAt?: string;
+}
+
+/**
+ * Review for a marketplace agent
+ */
+export interface AgentReview {
+  reviewId: string;
+  agentId: string;
+  userId: string;
+  userDisplayName: string;
+
+  rating: number;                // 1-5 stars
+  title?: string;
+  content: string;
+
+  // Engagement
+  helpfulCount: number;
+
+  // Moderation
+  status: 'published' | 'pending' | 'removed';
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Request to list marketplace agents
+ */
+export interface ListMarketplaceAgentsRequest {
+  category?: MarketplaceCategory;
+  subcategory?: string;
+  tags?: string[];
+  search?: string;
+  featured?: boolean;
+  isMACPOriginal?: boolean;
+  sortBy?: 'popular' | 'rating' | 'newest' | 'name';
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * Response for marketplace listing
+ */
+export interface ListMarketplaceAgentsResponse {
+  agents: MarketplaceAgent[];
+  total: number;
+  limit: number;
+  offset: number;
+  categories: MarketplaceCategoryInfo[];
+}
+
+/**
+ * Request to subscribe to an agent
+ */
+export interface SubscribeToAgentRequest {
+  agentId: string;
+  paymentMethodId?: string;      // For paid agents
+}
+
+/**
+ * MACP Originals template IDs
+ */
+export const MACP_ORIGINAL_IDS = [
+  'health_buddy',
+  'fitness_coach',
+  'work_assistant',
+  'money_mentor',
+  'journal_pal',
+  'study_buddy',
+] as const;
+
+export type MACPOriginalId = typeof MACP_ORIGINAL_IDS[number];

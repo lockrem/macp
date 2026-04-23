@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACP Test Agents</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .agent-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .agent-emoji {
+            font-size: 2.5rem;
+        }
+        .agent-info h2 {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+        .agent-info .description {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .qr-container {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .qr-container img {
+            max-width: 200px;
+            height: auto;
+        }
+        .agent-greeting {
+            font-style: italic;
+            color: #ccc;
+            font-size: 0.9rem;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .agent-url {
+            font-size: 0.8rem;
+            color: #667eea;
+            word-break: break-all;
+            text-align: center;
+        }
+        .agent-url a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .agent-url a:hover {
+            text-decoration: underline;
+        }
+        .badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .trust-level {
+            font-size: 1.1rem;
+            margin: 30px 0 12px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .trust-level.partner { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .trust-level.family { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        .trust-level.close-friend { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
+        .trust-level.professional { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+        .trust-level.acquaintance { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .trust-level.guarded { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .trust-description {
+            color: #888;
+            font-size: 0.85rem;
+            margin: -4px 0 16px;
+        }
+        .instructions {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            color: #ccc;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MACP Test Agents</h1>
+        <p class="subtitle">Scan QR codes with the MACP iOS app to start conversations</p>
+
+        <div class="instructions">
+            <h3>How to Test</h3>
+            <ol>
+                <li>Open the MACP app on your iPhone</li>
+                <li>Go to the Connect tab and tap "Scan QR Code"</li>
+                <li>Point your camera at any QR code below</li>
+                <li>Your agents will automatically join based on conversation relevance</li>
+            </ol>
+        </div>
+
+        <h2 class="section-title">Social Network Test Agents</h2>
+        <p style="color: #888; margin-bottom: 20px;">8 agents across 5 trust levels testing different information-sharing behaviors. Each agent has boundaries appropriate to their relationship type.</p>
+
+        <!-- PARTNER TRUST -->
+        <div class="trust-level partner">💜 Partner Trust</div>
+        <p class="trust-description">Shares almost everything - wishlist, sizes, feelings. No guarded topics.</p>
+        <div class="agents-grid">
+            <!-- Jane's Assistant -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">💜</span>
+                    <div class="agent-info">
+                        <h2>Jane's Assistant</h2>
+                        <p class="description">Jane's personal AI - knows her wishlist, preferences, and feelings. Treats you as her partner.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-jane-girlfriend" alt="QR Code for Jane's Assistant">
+                </div>
+                <div class="agent-greeting">"Hi! I'm Jane's assistant. How can I help you today?"</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "What does Jane want for her birthday?" or "Why is Jane upset with me?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-jane-girlfriend" target="_blank">https://macp.io/test-jane-girlfriend</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Wishlist</span>
+                    <span class="badge">Relationship</span>
+                </div>
+            </div>
+
+            <!-- John's Assistant -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">💙</span>
+                    <div class="agent-info">
+                        <h2>John's Assistant</h2>
+                        <p class="description">John's personal AI - knows his wishlist and helps him be a better partner. Treats you as his partner.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-john-boyfriend" alt="QR Code for John's Assistant">
+                </div>
+                <div class="agent-greeting">"Hey! I'm John's assistant. What's up?"</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "What does John want for his birthday?" or "Has John been busy lately?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-john-boyfriend" target="_blank">https://macp.io/test-john-boyfriend</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Wishlist</span>
+                    <span class="badge">Relationship</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAMILY TRUST -->
+        <div class="trust-level family">🌷 Family Trust</div>
+        <p class="trust-description">Shares family events, schedules, gift prefs, recipes. Guarded about finances, health concerns, marital issues.</p>
+        <div class="agents-grid">
+            <!-- Mom (Linda) -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🌷</span>
+                    <div class="agent-info">
+                        <h2>Mom's Assistant (Linda)</h2>
+                        <p class="description">Retired teacher who loves gardening and cooking. Always planning the next family dinner.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-mom-linda" alt="QR Code for Mom's Assistant">
+                </div>
+                <div class="agent-greeting">"Oh hello, dear! Are you coming to dinner Sunday?"</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "What should I get Mom for Mother's Day?" or "When is the family dinner?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-mom-linda" target="_blank">https://macp.io/test-mom-linda</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Wishlist</span>
+                    <span class="badge">Family</span>
+                </div>
+            </div>
+
+            <!-- Dad (Robert) -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🔧</span>
+                    <div class="agent-info">
+                        <h2>Dad's Assistant (Robert)</h2>
+                        <p class="description">Semi-retired engineer. Says he doesn't want anything... but his agent knows the real wishlist.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-dad-robert" alt="QR Code for Dad's Assistant">
+                </div>
+                <div class="agent-greeting">"Hey there. What do you need? And no, he doesn't want anything for his birthday."</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "What does Dad actually want for Father's Day?" or "Is Dad free Saturday for fishing?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-dad-robert" target="_blank">https://macp.io/test-dad-robert</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Wishlist</span>
+                    <span class="badge">Family</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLOSE FRIEND TRUST -->
+        <div class="trust-level close-friend">🎉 Close Friend Trust</div>
+        <p class="trust-description">Shares social plans, interests, group coordination. Guarded about things told in confidence.</p>
+        <div class="agents-grid">
+            <!-- Best Friend (Sam) -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🎉</span>
+                    <div class="agent-info">
+                        <h2>Sam's Assistant</h2>
+                        <p class="description">The social coordinator. Knows everyone's plans, organizes group events, but won't share confidences.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-bestfriend-sam" alt="QR Code for Sam's Assistant">
+                </div>
+                <div class="agent-greeting">"Hey hey! What's going on - are we planning something fun?"</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "What's everyone doing this weekend?" or "Is Sam free for dinner Friday?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-bestfriend-sam" target="_blank">https://macp.io/test-bestfriend-sam</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Social Plans</span>
+                    <span class="badge">Group Coord</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFESSIONAL TRUST -->
+        <div class="trust-level professional">💼 Professional Trust</div>
+        <p class="trust-description">Shares work schedules, project status, team updates. Hard boundary on salary, reviews, personal life.</p>
+        <div class="agents-grid">
+            <!-- Boss (Karen) -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">💼</span>
+                    <div class="agent-info">
+                        <h2>Karen's Assistant (VP Eng)</h2>
+                        <p class="description">Professional and efficient. Shares work info freely but has hard boundaries on personal and compensation topics.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-boss-karen" alt="QR Code for Karen's Assistant">
+                </div>
+                <div class="agent-greeting">"Hello, I'm Karen's assistant. How can I help you with work-related matters?"</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "What's the Q2 deadline?" or "Is this a good week to ask about a promotion?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-boss-karen" target="_blank">https://macp.io/test-boss-karen</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Work Info</span>
+                    <span class="badge">Scheduling</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACQUAINTANCE TRUST -->
+        <div class="trust-level acquaintance">🏡 Acquaintance Trust</div>
+        <p class="trust-description">Shares basic availability, neighborhood info, pet care. Guarded about personal life and schedule details.</p>
+        <div class="agents-grid">
+            <!-- Neighbor (Dave) -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🏡</span>
+                    <div class="agent-info">
+                        <h2>Dave's Assistant (Neighbor)</h2>
+                        <p class="description">Friendly retiree next door with a golden retriever named Biscuit. Happy to help with packages and pet sitting.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-neighbor-dave" alt="QR Code for Dave's Assistant">
+                </div>
+                <div class="agent-greeting">"Hey there, neighbor! Need anything? Biscuit says hi, by the way."</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "Can Dave watch my dog Saturday?" or "Did Dave get my package?"</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-neighbor-dave" target="_blank">https://macp.io/test-neighbor-dave</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Neighborly</span>
+                    <span class="badge">Pet Care</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- GUARDED TRUST -->
+        <div class="trust-level guarded">🔒 Guarded Trust</div>
+        <p class="trust-description">Logistics only - shared pet custody, shared accounts. Deflects everything personal.</p>
+        <div class="agents-grid">
+            <!-- Ex (Morgan) -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🔒</span>
+                    <div class="agent-info">
+                        <h2>Morgan's Assistant (Ex)</h2>
+                        <p class="description">Amicable but firm boundaries. Only discusses shared logistics - cat custody, Netflix, returning items.</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-ex-morgan" alt="QR Code for Morgan's Assistant">
+                </div>
+                <div class="agent-greeting">"Hi. I can help with Oliver's schedule or shared logistics. What do you need?"</div>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 8px 0;">Try: "Is it Morgan's week with the cat?" or "How is Morgan doing?" (will deflect)</p>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-ex-morgan" target="_blank">https://macp.io/test-ex-morgan</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Logistics Only</span>
+                    <span class="badge">Firm Boundaries</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Test Agents</h2>
+        <div class="agents-grid">
+            <!-- Dr. Elena -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🩺</span>
+                    <div class="agent-info">
+                        <h2>Dr. Elena</h2>
+                        <p class="description">A thoughtful wellness advisor focused on holistic health and preventive care</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-dr-elena" alt="QR Code for Dr. Elena">
+                </div>
+                <div class="agent-greeting">"Hello, I'm Dr. Elena. How can I support your wellness journey today?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-dr-elena" target="_blank">https://macp.io/test-dr-elena</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Chef Marco -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">👨‍🍳</span>
+                    <div class="agent-info">
+                        <h2>Chef Marco</h2>
+                        <p class="description">A passionate Italian chef who loves sharing recipes and cooking wisdom</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-chef-marco" alt="QR Code for Chef Marco">
+                </div>
+                <div class="agent-greeting">"Buongiorno! Welcome to my kitchen! What culinary adventure shall we embark on today?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-chef-marco" target="_blank">https://macp.io/test-chef-marco</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Professor Oak -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🎓</span>
+                    <div class="agent-info">
+                        <h2>Professor Oak</h2>
+                        <p class="description">An enthusiastic educator who makes complex topics accessible and fun</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-professor-oak" alt="QR Code for Professor Oak">
+                </div>
+                <div class="agent-greeting">"Ah, a curious mind! What would you like to explore today? No question is too simple or too complex!"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-professor-oak" target="_blank">https://macp.io/test-professor-oak</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Maya -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🧘</span>
+                    <div class="agent-info">
+                        <h2>Maya</h2>
+                        <p class="description">A gentle mindfulness guide helping you find calm and clarity</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-maya-mindful" alt="QR Code for Maya">
+                </div>
+                <div class="agent-greeting">"Welcome to this moment of stillness. I'm Maya. How is your heart today?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-maya-mindful" target="_blank">https://macp.io/test-maya-mindful</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Startup Steve -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🚀</span>
+                    <div class="agent-info">
+                        <h2>Startup Steve</h2>
+                        <p class="description">A serial entrepreneur who's been through the startup trenches</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-startup-steve" alt="QR Code for Startup Steve">
+                </div>
+                <div class="agent-greeting">"Hey! Let's disrupt something. What are you building?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-startup-steve" target="_blank">https://macp.io/test-startup-steve</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Ruth -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">📚</span>
+                    <div class="agent-info">
+                        <h2>Ruth</h2>
+                        <p class="description">A well-read librarian with recommendations for every mood and moment</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/test-librarian-ruth" alt="QR Code for Ruth">
+                </div>
+                <div class="agent-greeting">"Hello, dear reader. Looking for your next adventure between the pages?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/test-librarian-ruth" target="_blank">https://macp.io/test-librarian-ruth</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Demo Agents</h2>
+        <div class="agents-grid">
+            <!-- Dr. Smith's Office -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🏥</span>
+                    <div class="agent-info">
+                        <h2>Dr. Smith's Office</h2>
+                        <p class="description">Medical office intake assistant - collects patient information</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/demo-doctors-office" alt="QR Code">
+                </div>
+                <div class="agent-greeting">"Welcome to Dr. Smith's office! I'm here to help gather some information."</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/demo-doctors-office" target="_blank">https://macp.io/demo-doctors-office</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- FitLife Coach -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">💪</span>
+                    <div class="agent-info">
+                        <h2>FitLife Coach</h2>
+                        <p class="description">Personal fitness intake - creates customized workout plans</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/demo-fitness-coach" alt="QR Code">
+                </div>
+                <div class="agent-greeting">"Hey! Ready to start your fitness journey?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/demo-fitness-coach" target="_blank">https://macp.io/demo-fitness-coach</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Mario's Ristorante -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🍝</span>
+                    <div class="agent-info">
+                        <h2>Mario's Ristorante</h2>
+                        <p class="description">Restaurant reservation and preference assistant</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/demo-restaurant" alt="QR Code">
+                </div>
+                <div class="agent-greeting">"Benvenuto to Mario's Ristorante!"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/demo-restaurant" target="_blank">https://macp.io/demo-restaurant</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- HomeFind Agent -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🏠</span>
+                    <div class="agent-info">
+                        <h2>HomeFind Agent</h2>
+                        <p class="description">Real estate assistant - helps understand home buying preferences</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/demo-real-estate" alt="QR Code">
+                </div>
+                <div class="agent-greeting">"Welcome to HomeFind! I'm here to help you find your perfect home."</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/demo-real-estate" target="_blank">https://macp.io/demo-real-estate</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- TechSolutions -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">💻</span>
+                    <div class="agent-info">
+                        <h2>TechSolutions</h2>
+                        <p class="description">Software consulting intake - discovers business problems</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/demo-software-consultant" alt="QR Code">
+                </div>
+                <div class="agent-greeting">"Hello! I'm here to understand your business challenges."</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/demo-software-consultant" target="_blank">https://macp.io/demo-software-consultant</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+
+            <!-- Gift Exchange -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-emoji">🎁</span>
+                    <div class="agent-info">
+                        <h2>Gift Exchange</h2>
+                        <p class="description">Helps coordinate gift exchanges by collecting wishlists</p>
+                    </div>
+                </div>
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=macp://agent/demo-gift-exchange" alt="QR Code">
+                </div>
+                <div class="agent-greeting">"Hey there! Ready to make gift-giving easier?"</div>
+                <div class="agent-url">
+                    <a href="https://macp.io/demo-gift-exchange" target="_blank">https://macp.io/demo-gift-exchange</a>
+                </div>
+                <div class="badges">
+                    <span class="badge">Direct Chat</span>
+                    <span class="badge">Agent-to-Agent</span>
+                    <span class="badge">Accompanied</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

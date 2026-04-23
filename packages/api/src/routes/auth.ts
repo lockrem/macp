@@ -3,6 +3,7 @@ import { z } from 'zod';
 import * as jose from 'jose';
 import * as jwt from 'jsonwebtoken';
 import * as crypto from 'crypto';
+import { createSystemAgentsForUser, getSystemAgentTemplates } from '../services/agent-templates.js';
 
 // -----------------------------------------------------------------------------
 // WebSocket Ticket Store (in production, use Redis)
@@ -29,6 +30,27 @@ setInterval(() => {
     }
   }
 }, 60000); // Clean every minute
+
+// -----------------------------------------------------------------------------
+// User Agents Store (in production, use database)
+// -----------------------------------------------------------------------------
+
+type UserAgent = ReturnType<typeof createSystemAgentsForUser>[0];
+const userAgentsStore = new Map<string, UserAgent[]>();
+
+/**
+ * Gets agents for a user
+ */
+export function getUserAgents(userId: string): UserAgent[] | undefined {
+  return userAgentsStore.get(userId);
+}
+
+/**
+ * Sets agents for a user
+ */
+export function setUserAgents(userId: string, agents: UserAgent[]): void {
+  userAgentsStore.set(userId, agents);
+}
 
 export function validateWSTicket(ticketId: string): { userId: string; email?: string; name?: string } | null {
   const ticket = wsTickets.get(ticketId);
@@ -178,6 +200,19 @@ export function registerAuthRoutes(app: FastifyInstance): void {
 
     app.log.info({ userId, email }, 'User authenticated via Apple Sign In');
 
+    // Check if user needs system agents provisioned
+    const existingAgents = userAgentsStore.get(userId);
+    let systemAgents = existingAgents;
+    let isFirstLogin = false;
+
+    if (!existingAgents || existingAgents.length === 0) {
+      // First login - create system agents for this user
+      isFirstLogin = true;
+      systemAgents = createSystemAgentsForUser(userId, 'anthropic');
+      userAgentsStore.set(userId, systemAgents);
+      app.log.info({ userId, agentCount: systemAgents.length }, 'Created system agents for new user');
+    }
+
     return {
       accessToken,
       refreshToken,
@@ -187,6 +222,17 @@ export function registerAuthRoutes(app: FastifyInstance): void {
         displayName: name || 'User',
         avatarUrl: null,
       },
+      isFirstLogin,
+      systemAgents: systemAgents?.map(a => ({
+        id: a.id,
+        templateId: a.templateId,
+        name: a.displayName,
+        emoji: a.emoji,
+        description: a.description,
+        greeting: a.greeting,
+        intents: a.intents,
+        accentColor: a.accentColor,
+      })),
     };
   });
 
@@ -227,6 +273,7 @@ export function registerAuthRoutes(app: FastifyInstance): void {
     try {
       body = z.object({ refreshToken: z.string() }).parse(req.body);
     } catch {
+      app.log.warn('[Auth] Refresh request missing token');
       reply.code(400);
       return { error: 'Invalid request body' };
     }
@@ -239,6 +286,7 @@ export function registerAuthRoutes(app: FastifyInstance): void {
       };
 
       if (payload.token_use !== 'refresh') {
+        app.log.warn({ tokenUse: payload.token_use }, '[Auth] Token is not a refresh token');
         reply.code(401);
         return { error: 'Invalid refresh token' };
       }
@@ -253,11 +301,73 @@ export function registerAuthRoutes(app: FastifyInstance): void {
         { expiresIn: '24h' }
       );
 
+      app.log.info({ userId: payload.sub }, '[Auth] Access token refreshed successfully');
       return { accessToken };
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'TokenExpiredError') {
+        app.log.warn({ expiredAt: error.expiredAt }, '[Auth] Refresh token expired');
+      } else if (error.name === 'JsonWebTokenError') {
+        app.log.warn({ message: error.message }, '[Auth] Invalid refresh token');
+      } else {
+        app.log.error({ error: error.message }, '[Auth] Refresh token verification error');
+      }
       reply.code(401);
       return { error: 'Invalid or expired refresh token' };
     }
+  });
+
+  // Get user's system agents
+  app.get('/auth/agents', async (req, reply) => {
+    if (!req.user) {
+      reply.code(401);
+      return { error: 'Authentication required' };
+    }
+
+    const userId = req.user.userId;
+    let agents = userAgentsStore.get(userId);
+
+    // If no agents exist, create them
+    if (!agents || agents.length === 0) {
+      agents = createSystemAgentsForUser(userId, 'anthropic');
+      userAgentsStore.set(userId, agents);
+      app.log.info({ userId, agentCount: agents.length }, 'Created system agents on demand');
+    }
+
+    return {
+      agents: agents.map(a => ({
+        id: a.id,
+        templateId: a.templateId,
+        name: a.displayName,
+        emoji: a.emoji,
+        description: a.description,
+        personality: a.personality,
+        greeting: a.greeting,
+        provider: a.provider,
+        intents: a.intents,
+        memoryCategories: a.memoryCategories,
+        accentColor: a.accentColor,
+        isSystemAgent: a.isSystemAgent,
+      })),
+    };
+  });
+
+  // Get available agent templates
+  app.get('/auth/agent-templates', async (req, reply) => {
+    const templates = getSystemAgentTemplates();
+
+    return {
+      templates: templates.map(t => ({
+        templateId: t.templateId,
+        name: t.name,
+        emoji: t.emoji,
+        description: t.description,
+        personality: t.personality,
+        greeting: t.greeting,
+        intents: t.intents,
+        memoryCategories: t.memoryCategories,
+        accentColor: t.accentColor,
+      })),
+    };
   });
 }
 

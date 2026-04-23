@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACP - Multi-Agent Communication Platform | Technical Architecture</title>
+    <style>
+        :root {
+            --primary: #007AFF;
+            --primary-dark: #0056b3;
+            --secondary: #5856D6;
+            --success: #34C759;
+            --warning: #FF9500;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--dark) 0%, #16213e 100%);
+            color: white;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        .hero .tagline {
+            display: inline-block;
+            background: var(--primary);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        section {
+            padding: 80px 0;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            color: var(--dark);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .executive-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white;
+        }
+
+        .executive-summary h2 {
+            color: white;
+        }
+
+        .executive-summary .metric,
+        .executive-summary .summary-card {
+            color: white;
+        }
+
+        .alt-bg {
+            background: var(--light);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .summary-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .summary-card h3 {
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .summary-card .icon {
+            font-size: 2rem;
+        }
+
+        .summary-card p {
+            opacity: 0.95;
+            margin-top: 15px;
+        }
+
+        .key-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 60px 0;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+
+        .metric .number {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .metric .label {
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .architecture-visual {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+
+        .arch-layer {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+
+        .arch-layer:hover {
+            transform: translateX(10px);
+        }
+
+        .arch-layer.ios {
+            background: linear-gradient(90deg, #000 0%, #333 100%);
+            color: white;
+        }
+
+        .arch-layer.lambda {
+            background: linear-gradient(90deg, #FF9900 0%, #FFB84D 100%);
+            color: #232F3E;
+        }
+
+        .arch-layer.infra {
+            background: linear-gradient(90deg, #232F3E 0%, #37475A 100%);
+            color: white;
+        }
+
+        .arch-layer.core {
+            background: linear-gradient(90deg, var(--secondary) 0%, #7B68EE 100%);
+            color: white;
+        }
+
+        .arch-layer .percentage {
+            font-size: 2.5rem;
+            font-weight: 700;
+            min-width: 100px;
+        }
+
+        .arch-layer .details {
+            flex: 1;
+            margin-left: 30px;
+        }
+
+        .arch-layer .details h4 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .arch-layer .details p {
+            opacity: 0.9;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--primary);
+        }
+
+        .feature-card h4 {
+            color: var(--dark);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card .badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--light);
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .feature-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-card li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .tech-badge {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .differentiators {
+            background: var(--dark);
+            color: white;
+        }
+
+        .differentiators h2 {
+            color: white;
+        }
+
+        .diff-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .diff-item {
+            text-align: center;
+            padding: 40px 30px;
+        }
+
+        .diff-item .icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .diff-item h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .diff-item p {
+            opacity: 0.85;
+        }
+
+        .data-flow {
+            background: #f5f7fa;
+            border-radius: 16px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px 0;
+        }
+
+        .flow-number {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .flow-content {
+            margin-left: 20px;
+            flex: 1;
+        }
+
+        .flow-content h5 {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .flow-arrow {
+            width: 40px;
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        th {
+            background: var(--dark);
+            color: white;
+            padding: 18px 20px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .location-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .location-badge.ios {
+            background: #000;
+            color: white;
+        }
+
+        .location-badge.lambda {
+            background: #FF9900;
+            color: #232F3E;
+        }
+
+        .location-badge.infra {
+            background: #232F3E;
+            color: white;
+        }
+
+        .location-badge.core {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            text-align: center;
+            padding: 100px 40px;
+        }
+
+        .cta-section h2 {
+            color: white;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: var(--primary);
+            padding: 18px 50px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        footer p {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .key-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .diff-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .arch-layer {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .arch-layer .details {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <h1>MACP</h1>
+        <p class="subtitle">Multi-Agent Communication Platform</p>
+        <p class="tagline">The Future of Personal AI Assistants</p>
+    </header>
+
+    <section class="executive-summary">
+        <div class="container">
+            <h2>Executive Summary</h2>
+
+            <div class="key-metrics">
+                <div class="metric">
+                    <div class="number">4</div>
+                    <div class="label">LLM Providers Supported</div>
+                </div>
+                <div class="metric">
+                    <div class="number">15+</div>
+                    <div class="label">Core Capabilities</div>
+                </div>
+                <div class="metric">
+                    <div class="number">100%</div>
+                    <div class="label">Serverless Architecture</div>
+                </div>
+                <div class="metric">
+                    <div class="number">Real-time</div>
+                    <div class="label">Multi-Agent Orchestration</div>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3><span class="icon">🤖</span> Personal AI Agents</h3>
+                    <p>Users create personalized AI agents that learn their preferences, dietary restrictions, schedules, and relationships. These agents represent users in conversations with businesses and services.</p>
+                </div>
+                <div class="summary-card">
+                    <h3><span class="icon">🔄</span> Multi-Agent Orchestration</h3>
+                    <p>Proprietary bidding engine determines which specialist agents should respond to each query. Health agents handle dietary questions, finance agents track budgets, assistants coordinate logistics.</p>
+                </div>
+                <div class="summary-card">
+                    <h3><span class="icon">🏪</span> Agent Marketplace</h3>
+                    <p>Businesses publish their own AI agents. When users scan a QR code at a restaurant, their personal agents communicate with the restaurant's agent to handle reservations, dietary restrictions, and preferences.</p>
+                </div>
+                <div class="summary-card">
+                    <h3><span class="icon">🧠</span> Persistent Memory</h3>
+                    <p>The platform learns from every interaction. Facts about users are extracted and stored, creating an ever-improving profile that agents use to provide personalized, proactive service.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Platform Architecture</h2>
+
+            <div class="architecture-visual">
+                <div class="arch-layer lambda">
+                    <div class="percentage">55%</div>
+                    <div class="details">
+                        <h4>AWS Lambda (API Layer)</h4>
+                        <p>Core business logic, AI orchestration, memory extraction, real-time WebSocket handling, and all data persistence. The brain of the platform.</p>
+                    </div>
+                </div>
+
+                <div class="arch-layer ios">
+                    <div class="percentage">30%</div>
+                    <div class="details">
+                        <h4>iOS Application</h4>
+                        <p>Native Swift UI, local agent caching, voice integration (speech-to-text, text-to-speech), and seamless sync coordination. Beautiful, responsive user experience.</p>
+                    </div>
+                </div>
+
+                <div class="arch-layer infra">
+                    <div class="percentage">10%</div>
+                    <div class="details">
+                        <h4>AWS Infrastructure</h4>
+                        <p>Cognito authentication, WebSocket API Gateway for real-time features, RDS Aurora PostgreSQL, ElastiCache Redis, and S3 storage. Enterprise-grade reliability.</p>
+                    </div>
+                </div>
+
+                <div class="arch-layer core">
+                    <div class="percentage">5%</div>
+                    <div class="details">
+                        <h4>Core Package (Shared)</h4>
+                        <p>Multi-provider LLM adapters (Claude, GPT, Gemini, Groq), database schemas, and shared types. Flexible AI backbone supporting any provider.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="differentiators">
+        <div class="container">
+            <h2>Competitive Differentiators</h2>
+
+            <div class="diff-grid">
+                <div class="diff-item">
+                    <div class="icon">🎯</div>
+                    <h4>Agent Bidding Engine</h4>
+                    <p>Proprietary system where multiple AI agents compete to provide the most relevant response. No other platform offers true multi-agent collaboration with intelligent routing.</p>
+                </div>
+                <div class="diff-item">
+                    <div class="icon">🔗</div>
+                    <h4>Agent-to-Agent Communication</h4>
+                    <p>Your AI talks to their AI. When you visit a business, your agents negotiate on your behalf - sharing dietary needs, preferences, and requirements automatically.</p>
+                </div>
+                <div class="diff-item">
+                    <div class="icon">📱</div>
+                    <h4>QR-Triggered Experiences</h4>
+                    <p>Scan a QR code and your AI assistant immediately begins a contextual conversation with the business. No app downloads, no forms - just instant, intelligent service.</p>
+                </div>
+                <div class="diff-item">
+                    <div class="icon">🧩</div>
+                    <h4>Provider Agnostic</h4>
+                    <p>Not locked into any single AI provider. Switch between Claude, GPT-4, Gemini, or Groq based on cost, speed, or capability needs. Future-proof architecture.</p>
+                </div>
+                <div class="diff-item">
+                    <div class="icon">📋</div>
+                    <h4>Smart Forms</h4>
+                    <p>Forms that fill themselves. AI agents collect information conversationally and auto-populate from user memory. Turn tedious form-filling into natural dialogue.</p>
+                </div>
+                <div class="diff-item">
+                    <div class="icon">🎤</div>
+                    <h4>Voice-First Design</h4>
+                    <p>Full voice integration with speech recognition and text-to-speech. Interact with your agents naturally, hands-free, with customizable AI voices.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="alt-bg">
+        <div class="container">
+            <h2>Core Capabilities</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔐 Authentication & Identity <span class="badge">AWS Cognito</span></h4>
+                    <ul>
+                        <li>Secure user registration and sign-in</li>
+                        <li>JWT token management with auto-refresh</li>
+                        <li>Apple Sign-In integration ready</li>
+                        <li>Multi-factor authentication support</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🤖 Agent Management <span class="badge">Full CRUD</span></h4>
+                    <ul>
+                        <li>Create unlimited personal AI agents</li>
+                        <li>Customize personality, greeting, and behavior</li>
+                        <li>Cross-device sync with conflict resolution</li>
+                        <li>Pre-built agent templates for quick start</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>💬 Conversations <span class="badge">Real-time</span></h4>
+                    <ul>
+                        <li>Single and multi-agent chat modes</li>
+                        <li>WebSocket streaming for instant responses</li>
+                        <li>Orchestrated multi-agent collaboration</li>
+                        <li>Full conversation history and search</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🧠 Memory & Learning <span class="badge">AI-Powered</span></h4>
+                    <ul>
+                        <li>Automatic fact extraction from conversations</li>
+                        <li>Categorized memory (health, preferences, identity)</li>
+                        <li>Memory persistence across all devices</li>
+                        <li>User-editable memory management</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>📋 Smart Forms <span class="badge">Conversational</span></h4>
+                    <ul>
+                        <li>Build forms with multiple field types</li>
+                        <li>AI-powered conversational form filling</li>
+                        <li>Auto-fill from user memory</li>
+                        <li>Submission tracking and analytics</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>✅ Task Management <span class="badge">Autonomous</span></h4>
+                    <ul>
+                        <li>Create and assign tasks to agents</li>
+                        <li>Automatic task detection in conversations</li>
+                        <li>Task completion with AI summaries</li>
+                        <li>Link tasks to contacts for routing</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>👥 Contact Management <span class="badge">Linked</span></h4>
+                    <ul>
+                        <li>Full contact CRUD with rich profiles</li>
+                        <li>Link contacts to their AI agents</li>
+                        <li>Automatic contact extraction from chat</li>
+                        <li>Smart search across all fields</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🏪 Agent Marketplace <span class="badge">B2B Ready</span></h4>
+                    <ul>
+                        <li>Publish agents for public discovery</li>
+                        <li>QR code generation for instant access</li>
+                        <li>Multiple interaction modes (direct, accompanied)</li>
+                        <li>View counts and engagement analytics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Technology Stack</h2>
+
+            <div class="tech-stack">
+                <div class="tech-badge">🍎 Swift / SwiftUI</div>
+                <div class="tech-badge">⚡ Node.js / TypeScript</div>
+                <div class="tech-badge">🗄️ PostgreSQL (Aurora)</div>
+                <div class="tech-badge">⚡ Redis (ElastiCache)</div>
+                <div class="tech-badge">☁️ AWS Lambda</div>
+                <div class="tech-badge">🔌 WebSocket API</div>
+                <div class="tech-badge">🔐 AWS Cognito</div>
+                <div class="tech-badge">📦 AWS S3</div>
+                <div class="tech-badge">🤖 Claude AI</div>
+                <div class="tech-badge">🤖 OpenAI GPT</div>
+                <div class="tech-badge">🤖 Google Gemini</div>
+                <div class="tech-badge">🤖 Groq LLaMA</div>
+                <div class="tech-badge">🏗️ AWS CDK</div>
+                <div class="tech-badge">🗃️ Drizzle ORM</div>
+            </div>
+
+            <div class="data-flow">
+                <h3 style="margin-bottom: 30px; text-align: center;">How a Conversation Flows</h3>
+
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h5>User Scans QR Code</h5>
+                        <p>iOS app captures QR, identifies the business's public agent</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h5>WebSocket Connection Established</h5>
+                        <p>Real-time connection to Lambda via API Gateway WebSocket</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h5>Orchestration Engine Activates</h5>
+                        <p>Bidding engine evaluates which of user's agents should participate</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h5>Agents Communicate</h5>
+                        <p>User's agents share relevant info (dietary needs, preferences) with host agent</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <h5>Facts Extracted & Stored</h5>
+                        <p>AI extracts new facts from conversation, stores in user's persistent memory</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <h5>Task Completion Detected</h5>
+                        <p>If a reservation was made or question answered, task is automatically marked complete</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="alt-bg">
+        <div class="container">
+            <h2>Detailed Capability Matrix</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Capability</th>
+                        <th>Primary Location</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Authentication</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>Cognito integration, JWT validation, token refresh</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agent CRUD</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span> <span class="location-badge ios">iOS</span></td>
+                        <td>Create, edit, delete agents with cross-device sync</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Multi-Agent Orchestration</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>Bidding engine, agent selection, response coordination</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Real-time Chat</strong></td>
+                        <td><span class="location-badge infra">WebSocket</span> <span class="location-badge lambda">Lambda</span></td>
+                        <td>WebSocket streaming, Redis state, instant responses</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Memory Extraction</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>AI-powered fact extraction and categorization</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LLM Integration</strong></td>
+                        <td><span class="location-badge core">Core Package</span></td>
+                        <td>Multi-provider adapters (Claude, GPT, Gemini, Groq)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smart Forms</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>Conversational filling, auto-complete, submissions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Task Management</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>CRUD, detection, completion, contact linking</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contact Management</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>CRUD, agent linking, smart search</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agent Marketplace</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>Publish, discover, session management</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Voice Integration</strong></td>
+                        <td><span class="location-badge ios">iOS</span></td>
+                        <td>Speech recognition, ElevenLabs TTS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Push Notifications</strong></td>
+                        <td><span class="location-badge lambda">AWS Lambda</span></td>
+                        <td>APNs integration, delivery tracking</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <h2>Ready to Transform Personal AI?</h2>
+        <p>MACP represents the next evolution in AI assistants - from single-purpose chatbots to a collaborative network of intelligent agents that truly understand and represent users.</p>
+        <a href="#" class="cta-button">Schedule a Demo</a>
+    </section>
+
+    <footer>
+        <p>MACP - Multi-Agent Communication Platform</p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">Confidential Technical Architecture Document</p>
+    </footer>
+</body>
+</html>

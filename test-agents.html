@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MACP Test Agents</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2rem;
+    }
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 40px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .card:hover {
+      border-color: #555;
+    }
+    .emoji {
+      font-size: 56px;
+      margin-bottom: 12px;
+    }
+    .name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .description {
+      font-size: 0.9rem;
+      color: #999;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      min-height: 45px;
+    }
+    .qr-container {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .qr-container img, .qr-container canvas {
+      display: block;
+    }
+    .deep-link {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #666;
+      background: #111;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .link {
+      display: block;
+      padding: 12px 16px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      color: #6366f1;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .link:hover {
+      background: #333;
+    }
+    .link.primary {
+      background: #6366f1;
+      color: #fff;
+      font-weight: 500;
+    }
+    .link.primary:hover {
+      background: #5558e3;
+    }
+    .instructions {
+      max-width: 1400px;
+      margin: 0 auto 40px;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+    }
+    .instructions h2 {
+      margin-bottom: 16px;
+      color: #a5b4fc;
+      font-size: 1.25rem;
+    }
+    .instructions ol {
+      margin-left: 24px;
+      line-height: 2;
+      color: #ccc;
+    }
+    .instructions li {
+      margin-bottom: 4px;
+    }
+    .api-section {
+      max-width: 1400px;
+      margin: 40px auto 0;
+      padding: 24px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 16px;
+    }
+    .api-section h2 {
+      margin-bottom: 16px;
+      font-size: 1.25rem;
+    }
+    .api-list {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 2.2;
+    }
+    .api-list a {
+      color: #6366f1;
+      text-decoration: none;
+    }
+    .api-list a:hover {
+      text-decoration: underline;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+    .badge.orange { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+    .badge.cyan { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+    .badge.green { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .badge.purple { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+    .badge.blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+    .badge.red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+  </style>
+</head>
+<body>
+  <h1>MACP Test Agents</h1>
+  <p class="subtitle">Scan a QR code with your phone to start an agent-to-agent conversation</p>
+
+  <div class="instructions">
+    <h2>How to Test Agent-to-Agent Conversations</h2>
+    <ol>
+      <li>Open the <strong>MACP iOS app</strong> on your device</li>
+      <li>Make sure you have at least one personal agent configured</li>
+      <li>Ensure you have an <strong>API key</strong> set in Settings</li>
+      <li>Scan any QR code below with your phone's camera</li>
+      <li>Choose <strong>"Send My Agent"</strong> to start an autonomous conversation</li>
+      <li>Watch your agent converse with the test agent in real-time!</li>
+    </ol>
+  </div>
+
+  <div class="grid" id="agentGrid"></div>
+
+  <div class="api-section">
+    <h2>API Endpoints (for debugging)</h2>
+    <div class="api-list" id="apiList"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://mmfhsdeuze.execute-api.us-east-1.amazonaws.com';
+
+    const TEST_AGENTS = [
+      {
+        agentId: 'test-chef-marco',
+        name: 'Chef Marco',
+        emoji: '👨‍🍳',
+        description: 'A passionate Italian chef who loves sharing recipes and cooking wisdom',
+        color: 'orange',
+      },
+      {
+        agentId: 'test-dr-elena',
+        name: 'Dr. Elena',
+        emoji: '🩺',
+        description: 'A thoughtful wellness advisor focused on holistic health and preventive care',
+        color: 'cyan',
+      },
+      {
+        agentId: 'test-professor-oak',
+        name: 'Professor Oak',
+        emoji: '🎓',
+        description: 'An enthusiastic educator who makes complex topics accessible and fun',
+        color: 'green',
+      },
+      {
+        agentId: 'test-maya-mindful',
+        name: 'Maya',
+        emoji: '🧘',
+        description: 'A gentle mindfulness guide helping you find calm and clarity',
+        color: 'purple',
+      },
+      {
+        agentId: 'test-startup-steve',
+        name: 'Startup Steve',
+        emoji: '🚀',
+        description: 'A serial entrepreneur who has been through the startup trenches',
+        color: 'blue',
+      },
+      {
+        agentId: 'test-librarian-ruth',
+        name: 'Ruth',
+        emoji: '📚',
+        description: 'A well-read librarian with book recommendations for every mood',
+        color: 'red',
+      },
+    ];
+
+    const grid = document.getElementById('agentGrid');
+    const apiList = document.getElementById('apiList');
+
+    TEST_AGENTS.forEach((agent, index) => {
+      const deepLink = `macp://agent/${agent.agentId}`;
+      const apiLink = `${API_BASE}/public/agent/${agent.agentId}`;
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="emoji">${agent.emoji}</div>
+        <div class="name">${agent.name}</div>
+        <span class="badge ${agent.color}">${agent.color}</span>
+        <div class="description">${agent.description}</div>
+        <div class="qr-container" id="qr-${index}"></div>
+        <div class="deep-link">${deepLink}</div>
+        <div class="links">
+          <a href="${deepLink}" class="link primary">Open in MACP App</a>
+          <a href="${apiLink}" target="_blank" class="link">View API Response</a>
+        </div>
+      `;
+      grid.appendChild(card);
+
+      // Generate QR code
+      try {
+        new QRCode(document.getElementById(`qr-${index}`), {
+          text: deepLink,
+          width: 180,
+          height: 180,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        console.error('QR generation failed for', agent.agentId, e);
+        document.getElementById(`qr-${index}`).innerHTML = '<div style="padding:20px;color:#666;">QR failed to load</div>';
+      }
+
+      // Add to API list
+      apiList.innerHTML += `<div><a href="${apiLink}" target="_blank">GET ${apiLink}</a></div>`;
+    });
+  </script>
+</body>
+</html>

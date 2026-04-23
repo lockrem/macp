@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Investor Talk Track - MACP</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Theme -->
+  <meta name="theme-color" content="#000000">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --accent: #6366f1;
+      --bg: #000;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-tertiary: rgba(255, 255, 255, 0.4);
+      --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --gold: #f59e0b;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: var(--accent);
+      top: -200px;
+      right: -200px;
+      opacity: 0.1;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-decoration: none;
+    }
+
+    .logo-name {
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-badge {
+      padding: 6px 14px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 120px 20px 80px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .page-header .subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Page Links */
+    .page-links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .page-link {
+      padding: 10px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .page-link:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.3);
+      color: var(--accent);
+    }
+
+    /* Section */
+    .track-section {
+      margin-bottom: 64px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .track-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .track-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .track-number {
+      width: 32px;
+      height: 32px;
+      background: var(--gradient-1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .track-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    .track-time {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .track-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .track-link:hover {
+      text-decoration: underline;
+    }
+
+    .track-body {
+      padding: 32px;
+    }
+
+    /* Talk Points */
+    .talk-points {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .talk-points > li {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .talk-points > li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .talk-point-main {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .talk-point-detail {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .talk-point-detail em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    /* Key Stats */
+    .key-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .key-stat {
+      text-align: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+    }
+
+    .key-stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .key-stat-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* Quote Box */
+    .quote-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .quote-box p {
+      font-size: 16px;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .quote-box .attribution {
+      font-size: 13px;
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    /* Transition */
+    .transition-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .transition-box::before {
+      content: '→';
+      font-size: 18px;
+    }
+
+    /* Objection Handling */
+    .objections {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .objections h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .objection {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+    }
+
+    .objection-q {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+
+    .objection-a {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .objection-a strong {
+      color: var(--green);
+    }
+
+    /* Summary Card */
+    .summary-card {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(74, 222, 128, 0.05) 100%);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 20px;
+      padding: 32px;
+      margin-top: 48px;
+    }
+
+    .summary-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+
+    .summary-list {
+      list-style: none;
+    }
+
+    .summary-list li {
+      padding: 8px 0;
+      font-size: 15px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .summary-list li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+      margin-top: 40px;
+    }
+
+    footer p {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+
+      .bg-gradient, nav {
+        display: none;
+      }
+
+      .content {
+        padding-top: 20px;
+      }
+
+      .track-section {
+        break-inside: avoid;
+        border: 1px solid #ccc;
+      }
+
+      .talk-point-detail em {
+        font-weight: bold;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav {
+        padding: 16px 20px;
+      }
+
+      .logo-subtitle {
+        display: none;
+      }
+
+      .track-header {
+        padding: 20px;
+      }
+
+      .track-body {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-gradient">
+    <div class="orb orb-1"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-name">MACP</span>
+      <span class="logo-subtitle">Multi-Agent Communication Platform</span>
+    </a>
+    <span class="nav-badge">Confidential</span>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+    <header class="page-header">
+      <h1>Investor Talk Track</h1>
+      <p class="subtitle">A structured guide for presenting MACP to investors. Each section maps to a page on the site.</p>
+    </header>
+
+    <div class="page-links">
+      <a href="/" class="page-link">Homepage</a>
+      <a href="/competition.html" class="page-link">Competition</a>
+      <a href="/investments.html" class="page-link">Investments</a>
+      <a href="/monetization.html" class="page-link">Monetization</a>
+    </div>
+
+    <!-- Section 1: Homepage / Vision -->
+    <div class="track-section">
+      <div class="track-header">
+        <h2><span class="track-number">1</span> The Vision</h2>
+        <div class="track-meta">
+          <span class="track-time">3-4 min</span>
+          <a href="/" class="track-link">Homepage →</a>
+        </div>
+      </div>
+      <div class="track-body">
+        <ul class="talk-points">
+          <li>
+            <div class="talk-point-main">Open with the problem</div>
+            <div class="talk-point-detail">"AI promised transformation. It delivered chatbots. Every company is deploying AI, but these agents can't talk to each other. They're islands. <em>That's the problem we solve.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Introduce the insight</div>
+            <div class="talk-point-detail">"The AI revolution is only a fraction complete. The next phase isn't smarter models - it's <em>agents that work together</em>. MACP is the protocol for agent-to-agent communication."</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Paint the picture</div>
+            <div class="talk-point-detail">"Imagine asking your assistant to find out what Stephanie wants for Christmas. Your assistant asks her assistant. Her assistant knows her wishlist, her sizes, what she just bought herself. <em>This is how the wealthy have always operated - assistants coordinating behind the scenes. We're democratizing that.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Describe the network effect</div>
+            <div class="talk-point-detail">"More businesses deploy AI staff, more consumers want personal assistants. More assistants means more value for businesses to deploy AI staff. <em>Classic two-sided marketplace dynamics.</em>"</div>
+          </li>
+        </ul>
+
+        <div class="quote-box">
+          <p>"Under the hood, every person becomes an API. That's the infrastructure play. We're building the TCP/IP of AI agents."</p>
+          <span class="attribution">— Use this line to land the technical vision</span>
+        </div>
+
+        <div class="transition-box">
+          Transition: "Let me show you how this positions us in the market..."
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Competition -->
+    <div class="track-section">
+      <div class="track-header">
+        <h2><span class="track-number">2</span> Competitive Landscape</h2>
+        <div class="track-meta">
+          <span class="track-time">2-3 min</span>
+          <a href="/competition.html" class="track-link">Competition →</a>
+        </div>
+      </div>
+      <div class="track-body">
+        <ul class="talk-points">
+          <li>
+            <div class="talk-point-main">Acknowledge the crowded space</div>
+            <div class="talk-point-detail">"Yes, the AI agent space is crowded. LangChain, CrewAI, Character.AI, Inflection - lots of activity. But look closer: <em>they're all building islands.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Segment the competitors</div>
+            <div class="talk-point-detail">"Developer frameworks like LangChain have technical sophistication but no network effects. Consumer apps like Character.AI have users but no utility. Enterprise platforms like Copilot are locked ecosystems. <em>Nobody is building the communication layer.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Position in the gap</div>
+            <div class="talk-point-detail">"We're the only platform combining sophisticated multi-agent orchestration with consumer accessibility AND network effects. <em>We're not competing for existing market share - we're creating a new category.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Address the big players</div>
+            <div class="talk-point-detail">"Microsoft, Google, Amazon - they're building AI into their existing products. They're not building an open network. Their agents won't talk to competitors. <em>That's our moat - neutrality.</em>"</div>
+          </li>
+        </ul>
+
+        <div class="key-stats">
+          <div class="key-stat">
+            <div class="key-stat-value">$49.9B</div>
+            <div class="key-stat-label">Conversational AI (2030)</div>
+          </div>
+          <div class="key-stat">
+            <div class="key-stat-value">$47.1B</div>
+            <div class="key-stat-label">AI Agents (2030)</div>
+          </div>
+          <div class="key-stat">
+            <div class="key-stat-value">44%</div>
+            <div class="key-stat-label">Agent Market CAGR</div>
+          </div>
+        </div>
+
+        <div class="transition-box">
+          Transition: "Now let me walk you through the economics..."
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Investments / Costs -->
+    <div class="track-section">
+      <div class="track-header">
+        <h2><span class="track-number">3</span> Investment & Costs</h2>
+        <div class="track-meta">
+          <span class="track-time">3-4 min</span>
+          <a href="/investments.html" class="track-link">Investments →</a>
+        </div>
+      </div>
+      <div class="track-body">
+        <ul class="talk-points">
+          <li>
+            <div class="talk-point-main">Lead with capital efficiency</div>
+            <div class="talk-point-detail">"Our infrastructure is serverless and scales to zero. Base cost is <em>$150/month</em>. At 10,000 MAU, we're at $2,500/month all-in. This is a capital-efficient business."</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Explain the cost structure</div>
+            <div class="talk-point-detail">"86% of our costs are LLM API calls. That's actually good news - <em>LLM costs are dropping 10x every 18 months</em>. Our margins expand automatically as the industry matures."</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Show the unit economics</div>
+            <div class="talk-point-detail">"Cost per message is about $0.02. At $9.99/month with 75 messages included, that's <em>$1.50 COGS on $9.99 revenue - 85% gross margin potential</em>."</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Present funding scenarios</div>
+            <div class="talk-point-detail">"We can bootstrap to profitability with ~50 paying users. But with a $500K seed, we can hit 25K MAU in 18-24 months. <em>The capital is for acceleration, not survival.</em>"</div>
+          </li>
+        </ul>
+
+        <div class="key-stats">
+          <div class="key-stat">
+            <div class="key-stat-value">$150</div>
+            <div class="key-stat-label">Base Monthly Cost</div>
+          </div>
+          <div class="key-stat">
+            <div class="key-stat-value">$0.02</div>
+            <div class="key-stat-label">Cost per Message</div>
+          </div>
+          <div class="key-stat">
+            <div class="key-stat-value">70-80%</div>
+            <div class="key-stat-label">Target Gross Margin</div>
+          </div>
+        </div>
+
+        <div class="objections">
+          <h4>Likely Questions</h4>
+          <div class="objection">
+            <div class="objection-q">"What if LLM costs increase?"</div>
+            <div class="objection-a"><strong>Competition is fierce.</strong> Anthropic, OpenAI, Google, Meta, Mistral are all racing. Prices only go down. We also support 4 providers - we can shift traffic to the cheapest option.</div>
+          </div>
+          <div class="objection">
+            <div class="objection-q">"How do you handle abuse/high-volume users?"</div>
+            <div class="objection-a"><strong>Message caps on free tier, fair use on paid.</strong> Heavy users pay more or hit rate limits. We've built cost controls into the architecture.</div>
+          </div>
+        </div>
+
+        <div class="transition-box">
+          Transition: "Let me show you how this translates to revenue..."
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Monetization -->
+    <div class="track-section">
+      <div class="track-header">
+        <h2><span class="track-number">4</span> Monetization Strategy</h2>
+        <div class="track-meta">
+          <span class="track-time">4-5 min</span>
+          <a href="/monetization.html" class="track-link">Monetization →</a>
+        </div>
+      </div>
+      <div class="track-body">
+        <ul class="talk-points">
+          <li>
+            <div class="talk-point-main">Introduce four streams</div>
+            <div class="talk-point-detail">"We have four revenue streams: <em>B2C subscriptions</em> for personal assistants, <em>B2B seats</em> for business AI staff, <em>C2C social network</em> as our viral engine, and <em>Creator Marketplace</em> where professionals publish agents."</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Walk through B2C</div>
+            <div class="talk-point-detail">"Free tier gets 20 messages/day - enough to get hooked. Pro at $9.99/month removes limits and enables 'always-on' agents for social features. Family plan at $19.99 for up to 5 people. <em>We expect 5% free-to-paid conversion.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Explain B2B</div>
+            <div class="talk-point-detail">"Businesses pay $49/seat/month for public-facing AI agents. Think healthcare intake, legal qualification, professional services requirements gathering. <em>These are high-value, high-retention contracts.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Get excited about C2C (the social layer)</div>
+            <div class="talk-point-detail">"This is the magic. Billy's agent checks with his friends' agents every morning - what's happening in his circle without scrolling Facebook. Susan shares a QR code for her birthday - Billy's agent asks her agent for gift ideas, sizes, allergies, what she already owns. <em>This is free, and that's the point - it's our viral engine.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Explain the C2C conversion</div>
+            <div class="talk-point-detail">"Free users can receive agent queries. But to have an 'always-on' agent that proactively checks with friends? <em>That requires Pro.</em> The social network drives subscriptions organically."</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Add Creator Marketplace</div>
+            <div class="talk-point-detail">"Then there's the creator economy. A golf pro with 50K followers launches an AI agent. Their fans subscribe at $50/month. Pro keeps 80%, we keep 20%. <em>Creators bring audiences to us for free.</em>"</div>
+          </li>
+          <li>
+            <div class="talk-point-main">Show the four-way flywheel</div>
+            <div class="talk-point-detail">"B2C users invite friends via C2C features. Friends need assistants to participate, driving more B2C. Businesses deploy agents to reach this network. Creators bring audiences. <em>Four flywheels spinning together - that's how platforms achieve escape velocity.</em>"</div>
+          </li>
+        </ul>
+
+        <div class="key-stats">
+          <div class="key-stat">
+            <div class="key-stat-value">$836K</div>
+            <div class="key-stat-label">Y2 ARR (Conservative)</div>
+          </div>
+          <div class="key-stat">
+            <div class="key-stat-value">$5.85M</div>
+            <div class="key-stat-label">Y2 ARR (Optimistic)</div>
+          </div>
+          <div class="key-stat">
+            <div class="key-stat-value">$9M-$170M</div>
+            <div class="key-stat-label">Y5 ARR Range</div>
+          </div>
+        </div>
+
+        <div class="objections">
+          <h4>Likely Questions</h4>
+          <div class="objection">
+            <div class="objection-q">"If C2C is free, how does it make money?"</div>
+            <div class="objection-a"><strong>It drives conversions.</strong> Free users can receive queries, but 'always-on' agents that proactively check with friends require Pro. The social features are the hook that converts free to paid.</div>
+          </div>
+          <div class="objection">
+            <div class="objection-q">"Why would creators choose you over their own solution?"</div>
+            <div class="objection-a"><strong>Distribution and infrastructure.</strong> We handle the tech, billing, memory, and put them in front of users already on the platform. They just bring expertise.</div>
+          </div>
+          <div class="objection">
+            <div class="objection-q">"What's stopping a big player from copying this?"</div>
+            <div class="objection-a"><strong>Network effects are the moat.</strong> Once users' agents are talking to friends' agents, switching means losing your social graph. Plus, big players won't build open networks - they want lock-in.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closing Summary -->
+    <div class="summary-card">
+      <h3>The Ask & Close</h3>
+      <ul class="summary-list">
+        <li><strong>The opportunity:</strong> Agent-to-agent communication is the missing layer of the AI revolution. We're building it.</li>
+        <li><strong>The timing:</strong> AI agents are proliferating but can't talk to each other. First mover in the protocol layer wins.</li>
+        <li><strong>The team:</strong> We've built the core platform - iOS app, serverless backend, multi-agent orchestration, memory system.</li>
+        <li><strong>The ask:</strong> $500K seed at $5M valuation to accelerate to 25K MAU and prove the flywheel.</li>
+        <li><strong>The vision:</strong> Every person with an AI assistant. Every business with AI staff. All talking to each other. MACP is the network.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 MACP. Confidential - Do not distribute.</p>
+  </footer>
+</body>
+</html>

@@ -8,7 +8,7 @@ export interface StoredConversation {
   id: string;
   topic: string;
   goal?: string;
-  mode: 'bts' | 'campfire' | 'solo';
+  mode: 'bts' | 'campfire' | 'solo' | 'universal' | 'introduction';
   maxTurns: number;
   status: 'pending' | 'active' | 'paused' | 'completed' | 'cancelled';
   currentTurn: number;
@@ -18,6 +18,43 @@ export interface StoredConversation {
   memoryCategories?: string[]; // Categories to inject into agent context
   extractFacts?: boolean; // Whether to extract facts after completion
   memoryContext?: string; // Pre-loaded memory context for agent
+  // Universal mode options (orchestrated routing)
+  orchestrationConfig?: {
+    apiKey: string;
+    provider: 'anthropic' | 'openai' | 'gemini' | 'groq';
+    agents: Array<{
+      id: string;
+      displayName: string;
+      emoji: string;
+      provider: string;
+      modelId: string;
+      personality?: string;
+      intents: string[];
+      memoryCategories: string[];
+    }>;
+  };
+  // Introduction mode options
+  introductionConfig?: {
+    agentId: string;
+    apiKey: string;
+    provider: 'anthropic' | 'openai' | 'gemini' | 'groq';
+    agentName: string;
+    agentEmoji: string;
+    // Custom agent fields
+    isCustomAgent?: boolean;
+    customQuestions?: Array<{
+      id: string;
+      question: string;
+      followUp?: string;
+      extractsMemory?: string[];
+      extractsRules?: boolean;
+      priority?: number;
+    }>;
+    // Agent-to-agent introduction fields
+    responderType?: 'human' | 'agent';
+    respondingAgentId?: string;
+    respondingAgentName?: string;
+  };
   participants: Array<{
     id: string;
     userId: string;
@@ -36,6 +73,8 @@ export interface StoredConversation {
     turnNumber: number;
     agentId: string;
     agentName: string;
+    agentEmoji?: string; // Agent emoji for attribution (universal mode)
+    intent?: string; // Detected intent (universal mode)
     content: string;
     isHuman?: boolean; // True if this is a human message in solo mode
     createdAt: string; // ISO string for Redis

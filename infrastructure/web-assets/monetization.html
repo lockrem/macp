@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Monetization Strategy - MACP</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Theme -->
+  <meta name="theme-color" content="#000000">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --bg: #000;
+      --bg-secondary: #0a0a0a;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-tertiary: rgba(255, 255, 255, 0.4);
+      --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --gold: #f59e0b;
+      --gold-light: #fbbf24;
+      --green: #22c55e;
+      --green-light: #4ade80;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: var(--green);
+      top: -200px;
+      right: -200px;
+      opacity: 0.1;
+    }
+
+    .orb-2 {
+      width: 400px;
+      height: 400px;
+      background: var(--gold);
+      bottom: 20%;
+      left: -100px;
+      opacity: 0.08;
+    }
+
+    .orb-3 {
+      width: 300px;
+      height: 300px;
+      background: var(--accent);
+      top: 50%;
+      right: 20%;
+      opacity: 0.08;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-decoration: none;
+    }
+
+    .logo-name {
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-badge {
+      padding: 6px 14px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 120px 20px 80px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .page-header .subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Section */
+    section {
+      margin-bottom: 80px;
+    }
+
+    section h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    section h2::before {
+      content: '';
+      width: 4px;
+      height: 28px;
+      background: var(--gradient-1);
+      border-radius: 2px;
+    }
+
+    /* Revenue Streams Overview */
+    .streams-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 900px) {
+      .streams-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stream-card.marketplace::before {
+      background: linear-gradient(90deg, #ec4899, #f472b6);
+    }
+
+    .stream-card.marketplace .stream-icon {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.2));
+    }
+
+    .stream-card.marketplace .stream-label {
+      background: rgba(236, 72, 153, 0.15);
+      color: #ec4899;
+    }
+
+    .stream-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stream-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .stream-card.b2c::before {
+      background: linear-gradient(90deg, var(--accent), #8b5cf6);
+    }
+
+    .stream-card.b2b::before {
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    }
+
+    .stream-card.c2c::before {
+      background: linear-gradient(90deg, var(--green), var(--green-light));
+    }
+
+    .stream-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .stream-card.b2c .stream-icon {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    }
+
+    .stream-card.b2b .stream-icon {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.2));
+    }
+
+    .stream-card.c2c .stream-icon {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(74, 222, 128, 0.2));
+    }
+
+    .stream-label {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .stream-card.b2c .stream-label {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent);
+    }
+
+    .stream-card.b2b .stream-label {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--gold);
+    }
+
+    .stream-card.c2c .stream-label {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+    }
+
+    .stream-card h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .stream-card > p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .stream-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .metric {
+      text-align: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* Pricing Tiers */
+    .pricing-section {
+      margin-top: 48px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .pricing-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    .pricing-card.featured {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: scale(1.02);
+    }
+
+    .pricing-card.business {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--accent);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .pricing-card h4 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .pricing-price {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .pricing-price span {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .pricing-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .pricing-features {
+      list-style: none;
+    }
+
+    .pricing-features li {
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pricing-features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* ROI Tables */
+    .roi-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 900px) {
+      .roi-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .roi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .roi-card.conservative {
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .roi-card.optimistic {
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .roi-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .roi-card.conservative .roi-header {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+    }
+
+    .roi-card.optimistic .roi-header {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(74, 222, 128, 0.05) 100%);
+    }
+
+    .roi-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .roi-badge {
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .roi-card.conservative .roi-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--blue);
+    }
+
+    .roi-card.optimistic .roi-badge {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--green);
+    }
+
+    .roi-body {
+      padding: 24px;
+    }
+
+    .roi-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .roi-table th,
+    .roi-table td {
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 14px;
+    }
+
+    .roi-table th {
+      color: var(--text-tertiary);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .roi-table td:last-child {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .roi-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .roi-table .highlight {
+      color: var(--green);
+    }
+
+    .roi-table .total-row {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .roi-table .total-row td {
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px 8px;
+    }
+
+    .roi-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .roi-stat {
+      text-align: center;
+    }
+
+    .roi-stat-value {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .roi-card.conservative .roi-stat-value {
+      color: var(--blue);
+    }
+
+    .roi-card.optimistic .roi-stat-value {
+      color: var(--green);
+    }
+
+    .roi-stat-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* Revenue Breakdown Chart */
+    .chart-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .stacked-bar {
+      display: flex;
+      height: 48px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .bar-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      transition: all 0.3s;
+    }
+
+    .bar-segment:hover {
+      filter: brightness(1.1);
+    }
+
+    .bar-segment.b2c {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    }
+
+    .bar-segment.b2b {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    }
+
+    .bar-segment.c2c {
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+    }
+
+    .legend-dot.b2c {
+      background: var(--accent);
+    }
+
+    .legend-dot.b2b {
+      background: var(--gold);
+    }
+
+    .legend-dot.c2c {
+      background: var(--green);
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--card-border);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 32px;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -32px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .timeline-item.active .timeline-dot {
+      background: var(--accent);
+      color: white;
+    }
+
+    .timeline-content {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .timeline-period {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .timeline-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .timeline-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .timeline-metrics {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .timeline-metric {
+      font-size: 14px;
+    }
+
+    .timeline-metric strong {
+      color: var(--gold);
+    }
+
+    /* Insight Box */
+    .insight-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 20px;
+      padding: 32px;
+      margin-top: 32px;
+    }
+
+    .insight-box h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .insight-box p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .insight-box strong {
+      color: var(--text);
+    }
+
+    .insight-box.green {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(74, 222, 128, 0.05) 100%);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .insight-box.green h3 {
+      color: var(--green);
+    }
+
+    /* Use Case Details */
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .usecase-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .usecase-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .usecase-card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .usecase-revenue {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .usecase-revenue span:last-child {
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+      margin-top: 40px;
+    }
+
+    footer p {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    .footer-links {
+      margin-bottom: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-links .current {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .footer-divider {
+      color: var(--card-border);
+      margin: 0 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav {
+        padding: 16px 20px;
+      }
+
+      .logo-subtitle {
+        display: none;
+      }
+
+      .roi-summary {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .timeline {
+        padding-left: 24px;
+      }
+
+      .timeline-dot {
+        left: -24px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-gradient">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-name">MACP</span>
+      <span class="logo-subtitle">Multi-Agent Communication Platform</span>
+    </a>
+    <span class="nav-badge">Confidential</span>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+    <header class="page-header">
+      <h1>Monetization Strategy</h1>
+      <p class="subtitle">Three revenue streams. Multiple touchpoints. A platform that makes money when users get value.</p>
+    </header>
+
+    <!-- Revenue Streams Overview -->
+    <section>
+      <h2>Revenue Streams</h2>
+      <div class="streams-grid">
+        <!-- B2C -->
+        <div class="stream-card b2c">
+          <div class="stream-icon">👤</div>
+          <span class="stream-label">B2C</span>
+          <h3>Consumer Subscriptions</h3>
+          <p>Personal AI assistants for individuals. Freemium model with premium tiers for power users.</p>
+          <div class="stream-metrics">
+            <div class="metric">
+              <div class="metric-value">$9.99</div>
+              <div class="metric-label">Pro / month</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">70%</div>
+              <div class="metric-label">Gross margin</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">$120</div>
+              <div class="metric-label">Annual LTV</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">5%</div>
+              <div class="metric-label">Free→Paid</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B2B -->
+        <div class="stream-card b2b">
+          <div class="stream-icon">🏢</div>
+          <span class="stream-label">B2B</span>
+          <h3>Business AI Staff</h3>
+          <p>Companies deploy AI agents for intake, support, and sales. Per-seat pricing with enterprise tiers.</p>
+          <div class="stream-metrics">
+            <div class="metric">
+              <div class="metric-value">$49</div>
+              <div class="metric-label">Seat / month</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">80%</div>
+              <div class="metric-label">Gross margin</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">$2,940</div>
+              <div class="metric-label">Annual LTV</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">5</div>
+              <div class="metric-label">Avg seats</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C2C -->
+        <div class="stream-card c2c">
+          <div class="stream-icon">👥</div>
+          <span class="stream-label">C2C</span>
+          <h3>Social Agent Network</h3>
+          <p>Your agent talks to your friends' agents. Morning check-ins, gift coordination, scheduling. The viral engine.</p>
+          <div class="stream-metrics">
+            <div class="metric">
+              <div class="metric-value">Free</div>
+              <div class="metric-label">Base access</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">Viral</div>
+              <div class="metric-label">Growth driver</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">Pro req'd</div>
+              <div class="metric-label">Always-on</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">Network</div>
+              <div class="metric-label">Lock-in effect</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marketplace -->
+        <div class="stream-card marketplace">
+          <div class="stream-icon">🎨</div>
+          <span class="stream-label">Marketplace</span>
+          <h3>Creator Economy</h3>
+          <p>Professionals publish AI agents. Golf pros, coaches, tutors monetize their expertise at scale.</p>
+          <div class="stream-metrics">
+            <div class="metric">
+              <div class="metric-value">20%</div>
+              <div class="metric-label">Platform take</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">95%</div>
+              <div class="metric-label">Gross margin</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">$5-50</div>
+              <div class="metric-label">Agent sub</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">$1-5</div>
+              <div class="metric-label">Per session</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Tiers -->
+    <section class="pricing-section">
+      <h2>Pricing Structure</h2>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h4>Free</h4>
+          <div class="pricing-price">$0</div>
+          <p class="pricing-desc">Get started with your AI assistant</p>
+          <ul class="pricing-features">
+            <li>20 messages per day</li>
+            <li>3 custom agents</li>
+            <li>Basic memory (30 days)</li>
+            <li>MACP Original agents</li>
+            <li>Community support</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card featured">
+          <span class="pricing-badge">Most Popular</span>
+          <h4>Pro</h4>
+          <div class="pricing-price">$9.99 <span>/mo</span></div>
+          <p class="pricing-desc">Unlimited conversations, full power</p>
+          <ul class="pricing-features">
+            <li>Unlimited messages</li>
+            <li>Unlimited custom agents</li>
+            <li>Persistent memory (forever)</li>
+            <li>Priority response speed</li>
+            <li>Advanced orchestration</li>
+            <li>Export conversations</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card">
+          <h4>Family</h4>
+          <div class="pricing-price">$19.99 <span>/mo</span></div>
+          <p class="pricing-desc">Share with up to 5 family members</p>
+          <ul class="pricing-features">
+            <li>Everything in Pro</li>
+            <li>5 family accounts</li>
+            <li>Shared agent library</li>
+            <li>Family coordination features</li>
+            <li>Parental controls</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card business">
+          <h4>Business</h4>
+          <div class="pricing-price">$49 <span>/seat/mo</span></div>
+          <p class="pricing-desc">AI staff for your organization</p>
+          <ul class="pricing-features">
+            <li>Public-facing AI agents</li>
+            <li>Custom branding</li>
+            <li>Analytics dashboard</li>
+            <li>Lead capture & CRM export</li>
+            <li>API access</li>
+            <li>Dedicated support</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card business">
+          <h4>Enterprise</h4>
+          <div class="pricing-price">Custom</div>
+          <p class="pricing-desc">White-label & custom deployments</p>
+          <ul class="pricing-features">
+            <li>Everything in Business</li>
+            <li>White-label solution</li>
+            <li>Custom integrations</li>
+            <li>SSO / SAML</li>
+            <li>SLA guarantees</li>
+            <li>Dedicated CSM</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card">
+          <h4>API</h4>
+          <div class="pricing-price">Usage</div>
+          <p class="pricing-desc">Build on MACP infrastructure</p>
+          <ul class="pricing-features">
+            <li>$0.025 per message</li>
+            <li>$0.10 per orchestration</li>
+            <li>$0.005 per memory query</li>
+            <li>Volume discounts at scale</li>
+            <li>Full documentation</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- B2B Use Cases -->
+    <section>
+      <h2>B2B Use Cases</h2>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <h4>🏥 Healthcare Intake</h4>
+          <p>24/7 patient intake, symptom triage, appointment scheduling. Reduces admin burden by 60%.</p>
+          <div class="usecase-revenue">
+            <span>Avg. contract</span>
+            <span>$2,500/mo</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>⚖️ Legal Intake</h4>
+          <p>Initial case assessment, document collection, client qualification. Works after hours.</p>
+          <div class="usecase-revenue">
+            <span>Avg. contract</span>
+            <span>$1,500/mo</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🏠 Real Estate</h4>
+          <p>Property inquiries, showing scheduling, buyer/seller qualification. Never miss a lead.</p>
+          <div class="usecase-revenue">
+            <span>Avg. contract</span>
+            <span>$500/mo</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>💻 Professional Services</h4>
+          <p>Software requirements gathering, project scoping, client discovery. Captures detailed specs before the first meeting.</p>
+          <div class="usecase-revenue">
+            <span>Avg. contract</span>
+            <span>$2,000/mo</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🏦 Financial Services</h4>
+          <p>Account inquiries, loan pre-qualification, appointment booking. Compliance-aware responses.</p>
+          <div class="usecase-revenue">
+            <span>Avg. contract</span>
+            <span>$3,000/mo</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🎓 Education</h4>
+          <p>Admissions inquiries, course guidance, student support. Handles peak enrollment periods.</p>
+          <div class="usecase-revenue">
+            <span>Avg. contract</span>
+            <span>$800/mo</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- C2C Social Network -->
+    <section>
+      <h2>C2C: The Social Agent Network</h2>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <h4>🌅 Morning Check-ins</h4>
+          <p>Billy's agent checks with Michael's, Tommy's, and Albert's agents every morning. What's happening in your circle - without scrolling Facebook.</p>
+          <div class="usecase-revenue">
+            <span>Monetization</span>
+            <span>Drives Pro upgrades</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🎁 Gift Coordination</h4>
+          <p>Scan Susan's QR code. Your agent asks her agent: wishlist, sizes, allergies, what she already owns. No awkward asking. No duplicate gifts.</p>
+          <div class="usecase-revenue">
+            <span>Monetization</span>
+            <span>Viral sharing</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>📅 Social Scheduling</h4>
+          <p>"Have my assistant find a time with Mike's assistant." No more text ping-pong. Agents coordinate calendars and preferences automatically.</p>
+          <div class="usecase-revenue">
+            <span>Monetization</span>
+            <span>Network lock-in</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🎉 Group Coordination</h4>
+          <p>"What does everyone want to do Saturday?" Your agent polls friends' agents, finds common availability, suggests activities everyone enjoys.</p>
+          <div class="usecase-revenue">
+            <span>Monetization</span>
+            <span>Multi-user value</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🏠 Life Updates</h4>
+          <p>New job? New baby? Moving? Your agent shares updates with your circle's agents. They remember, so your friends' assistants can reference it naturally.</p>
+          <div class="usecase-revenue">
+            <span>Monetization</span>
+            <span>Engagement depth</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🤝 Warm Intros</h4>
+          <p>"Ask Sarah's agent if she knows anyone in marketing." Agent-to-agent networking. Your assistant works your extended network for you.</p>
+          <div class="usecase-revenue">
+            <span>Monetization</span>
+            <span>Network effects</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-box green">
+        <h3>The Viral Engine</h3>
+        <p>
+          <strong>C2C is free - and that's the point.</strong> Every user who shares their QR code brings friends into the network.
+          Those friends need their own assistants to participate. Free users can receive queries, but <em>Pro subscribers get "always-on" agents</em> that can initiate contact and stay updated.
+          The social network drives subscriptions organically.
+        </p>
+      </div>
+    </section>
+
+    <!-- Creator Marketplace -->
+    <section>
+      <h2>Creator Marketplace</h2>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <h4>⛳ Golf Pro</h4>
+          <p>Swing analysis, course strategy, mental game coaching. Subscribers get 24/7 access to pro-level advice.</p>
+          <div class="usecase-revenue">
+            <span>Creator earns</span>
+            <span>$40/sub (80%)</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>💪 Fitness Coach</h4>
+          <p>Personalized workouts, nutrition plans, accountability check-ins. Scales a trainer's impact infinitely.</p>
+          <div class="usecase-revenue">
+            <span>Creator earns</span>
+            <span>$24/sub (80%)</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>📚 SAT Tutor</h4>
+          <p>Practice questions, strategy tips, progress tracking. Premium test prep at accessible prices.</p>
+          <div class="usecase-revenue">
+            <span>Creator earns</span>
+            <span>$32/sub (80%)</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🎸 Music Teacher</h4>
+          <p>Technique lessons, practice routines, song breakdowns. Learn guitar from a pro, on demand.</p>
+          <div class="usecase-revenue">
+            <span>Creator earns</span>
+            <span>$16/sub (80%)</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>👨‍🍳 Celebrity Chef</h4>
+          <p>Recipe suggestions, cooking techniques, meal planning. Like having a chef in your kitchen.</p>
+          <div class="usecase-revenue">
+            <span>Creator earns</span>
+            <span>$8/sub (80%)</span>
+          </div>
+        </div>
+        <div class="usecase-card">
+          <h4>🧘 Wellness Guide</h4>
+          <p>Meditation guidance, stress management, sleep coaching. Personalized wellness support.</p>
+          <div class="usecase-revenue">
+            <span>Creator earns</span>
+            <span>$20/sub (80%)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <h3>The Creator Flywheel</h3>
+        <p>
+          <strong>Creators bring audiences.</strong> A golf pro with 50K Instagram followers launches an agent.
+          Their fans subscribe, bringing traffic to MACP. Those users discover other agents and the social network.
+          More creators see success, more launch agents. <strong>The platform compounds.</strong>
+        </p>
+      </div>
+    </section>
+
+    <!-- ROI Calculations -->
+    <section>
+      <h2>ROI Projections (Year 2)</h2>
+      <div class="roi-container">
+        <!-- Conservative -->
+        <div class="roi-card conservative">
+          <div class="roi-header">
+            <span class="roi-title">Conservative Scenario</span>
+            <span class="roi-badge">Base Case</span>
+          </div>
+          <div class="roi-body">
+            <table class="roi-table">
+              <thead>
+                <tr>
+                  <th>Revenue Stream</th>
+                  <th>Users</th>
+                  <th>Annual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>B2C Pro Subscriptions</td>
+                  <td>2,500 paid</td>
+                  <td>$300,000</td>
+                </tr>
+                <tr>
+                  <td>B2C Family Plans</td>
+                  <td>500 plans</td>
+                  <td>$120,000</td>
+                </tr>
+                <tr>
+                  <td>C2C-Driven Pro Upgrades</td>
+                  <td>500 viral conversions</td>
+                  <td>$60,000</td>
+                </tr>
+                <tr>
+                  <td>B2B Business Seats</td>
+                  <td>100 companies (3 seats avg)</td>
+                  <td>$176,400</td>
+                </tr>
+                <tr>
+                  <td>Creator Marketplace (20% take)</td>
+                  <td>50 creators, 1K subs each</td>
+                  <td>$120,000</td>
+                </tr>
+                <tr>
+                  <td>API Revenue</td>
+                  <td>10 integrations</td>
+                  <td>$60,000</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Total Annual Revenue</td>
+                  <td></td>
+                  <td class="highlight">$836,400</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="roi-summary">
+              <div class="roi-stat">
+                <div class="roi-stat-value">50K</div>
+                <div class="roi-stat-label">Total MAU</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">$16.73</div>
+                <div class="roi-stat-label">ARPU</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">72%</div>
+                <div class="roi-stat-label">Gross Margin</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Optimistic -->
+        <div class="roi-card optimistic">
+          <div class="roi-header">
+            <span class="roi-title">Optimistic Scenario</span>
+            <span class="roi-badge">Upside</span>
+          </div>
+          <div class="roi-body">
+            <table class="roi-table">
+              <thead>
+                <tr>
+                  <th>Revenue Stream</th>
+                  <th>Users</th>
+                  <th>Annual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>B2C Pro Subscriptions</td>
+                  <td>15,000 paid</td>
+                  <td>$1,800,000</td>
+                </tr>
+                <tr>
+                  <td>B2C Family Plans</td>
+                  <td>3,000 plans</td>
+                  <td>$720,000</td>
+                </tr>
+                <tr>
+                  <td>C2C-Driven Pro Upgrades</td>
+                  <td>5,000 viral conversions</td>
+                  <td>$600,000</td>
+                </tr>
+                <tr>
+                  <td>B2B Business Seats</td>
+                  <td>500 companies (5 seats avg)</td>
+                  <td>$1,470,000</td>
+                </tr>
+                <tr>
+                  <td>Creator Marketplace (20% take)</td>
+                  <td>200 creators, 2K subs each</td>
+                  <td>$960,000</td>
+                </tr>
+                <tr>
+                  <td>API Revenue</td>
+                  <td>50 integrations</td>
+                  <td>$300,000</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Total Annual Revenue</td>
+                  <td></td>
+                  <td class="highlight">$5,850,000</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="roi-summary">
+              <div class="roi-stat">
+                <div class="roi-stat-value">300K</div>
+                <div class="roi-stat-label">Total MAU</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">$19.50</div>
+                <div class="roi-stat-label">ARPU</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">75%</div>
+                <div class="roi-stat-label">Gross Margin</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue Mix Chart -->
+      <div class="chart-container">
+        <div class="chart-title">Revenue Mix at Scale (Optimistic Year 2)</div>
+        <div class="stacked-bar">
+          <div class="bar-segment b2c" style="width: 53%;">53%</div>
+          <div class="bar-segment b2b" style="width: 25%;">25%</div>
+          <div class="bar-segment c2c" style="width: 22%;">22%</div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot b2c"></div>
+            <span>B2C + C2C-Driven ($3.12M)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot b2b"></div>
+            <span>B2B Business ($1.47M)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot c2c"></div>
+            <span>Creator Marketplace + API ($1.26M)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5-Year Projections -->
+    <section>
+      <h2>5-Year Revenue Projections</h2>
+      <div class="roi-container">
+        <div class="roi-card conservative">
+          <div class="roi-header">
+            <span class="roi-title">Conservative Path</span>
+            <span class="roi-badge">Steady Growth</span>
+          </div>
+          <div class="roi-body">
+            <table class="roi-table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>MAU</th>
+                  <th>ARR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Year 1</td>
+                  <td>10,000</td>
+                  <td>$180,000</td>
+                </tr>
+                <tr>
+                  <td>Year 2</td>
+                  <td>50,000</td>
+                  <td>$776,400</td>
+                </tr>
+                <tr>
+                  <td>Year 3</td>
+                  <td>150,000</td>
+                  <td>$2,100,000</td>
+                </tr>
+                <tr>
+                  <td>Year 4</td>
+                  <td>350,000</td>
+                  <td>$4,800,000</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Year 5</td>
+                  <td>600,000</td>
+                  <td class="highlight">$8,500,000</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="roi-summary">
+              <div class="roi-stat">
+                <div class="roi-stat-value">118%</div>
+                <div class="roi-stat-label">Avg YoY Growth</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">$14.17</div>
+                <div class="roi-stat-label">Y5 ARPU</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">$42.5M</div>
+                <div class="roi-stat-label">Y5 Valuation (5x)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roi-card optimistic">
+          <div class="roi-header">
+            <span class="roi-title">Optimistic Path</span>
+            <span class="roi-badge">Viral Growth</span>
+          </div>
+          <div class="roi-body">
+            <table class="roi-table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>MAU</th>
+                  <th>ARR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Year 1</td>
+                  <td>25,000</td>
+                  <td>$450,000</td>
+                </tr>
+                <tr>
+                  <td>Year 2</td>
+                  <td>300,000</td>
+                  <td>$5,250,000</td>
+                </tr>
+                <tr>
+                  <td>Year 3</td>
+                  <td>1,500,000</td>
+                  <td>$24,000,000</td>
+                </tr>
+                <tr>
+                  <td>Year 4</td>
+                  <td>5,000,000</td>
+                  <td>$72,000,000</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Year 5</td>
+                  <td>12,000,000</td>
+                  <td class="highlight">$156,000,000</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="roi-summary">
+              <div class="roi-stat">
+                <div class="roi-stat-value">250%</div>
+                <div class="roi-stat-label">Avg YoY Growth</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">$13.00</div>
+                <div class="roi-stat-label">Y5 ARPU</div>
+              </div>
+              <div class="roi-stat">
+                <div class="roi-stat-value">$1.5B+</div>
+                <div class="roi-stat-label">Y5 Valuation (10x)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Growth Timeline -->
+    <section>
+      <h2>Monetization Roadmap</h2>
+      <div class="timeline">
+        <div class="timeline-item active">
+          <div class="timeline-dot">1</div>
+          <div class="timeline-content">
+            <div class="timeline-period">Q1-Q2 2026</div>
+            <div class="timeline-title">Foundation</div>
+            <div class="timeline-desc">Launch B2C subscriptions. Free tier drives adoption, Pro tier for power users. Focus on retention and product-market fit.</div>
+            <div class="timeline-metrics">
+              <span class="timeline-metric">Target: <strong>5K MAU</strong></span>
+              <span class="timeline-metric">Revenue: <strong>$50K ARR</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">2</div>
+          <div class="timeline-content">
+            <div class="timeline-period">Q3-Q4 2026</div>
+            <div class="timeline-title">B2B Launch</div>
+            <div class="timeline-desc">Launch Business tier. Target SMBs in healthcare, legal, real estate. Build case studies and ROI proof points.</div>
+            <div class="timeline-metrics">
+              <span class="timeline-metric">Target: <strong>25K MAU, 50 B2B</strong></span>
+              <span class="timeline-metric">Revenue: <strong>$300K ARR</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">3</div>
+          <div class="timeline-content">
+            <div class="timeline-period">Q1-Q2 2027</div>
+            <div class="timeline-title">Creator Marketplace Beta</div>
+            <div class="timeline-desc">Invite top creators to publish agents. Golf pros, fitness coaches, tutors. 80/20 revenue split. Build creator tools.</div>
+            <div class="timeline-metrics">
+              <span class="timeline-metric">Target: <strong>100K MAU, 100 creators</strong></span>
+              <span class="timeline-metric">Revenue: <strong>$1.5M ARR</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">4</div>
+          <div class="timeline-content">
+            <div class="timeline-period">Q3-Q4 2027</div>
+            <div class="timeline-title">Marketplace Public Launch</div>
+            <div class="timeline-desc">Open marketplace to all creators. Launch discovery features, ratings, reviews. Creator success program.</div>
+            <div class="timeline-metrics">
+              <span class="timeline-metric">Target: <strong>300K MAU, 500 creators</strong></span>
+              <span class="timeline-metric">Revenue: <strong>$5M ARR</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">5</div>
+          <div class="timeline-content">
+            <div class="timeline-period">2028+</div>
+            <div class="timeline-title">Platform Expansion</div>
+            <div class="timeline-desc">API platform for developers. Enterprise white-label. International expansion. Agent-to-agent commerce layer.</div>
+            <div class="timeline-metrics">
+              <span class="timeline-metric">Target: <strong>1M+ MAU</strong></span>
+              <span class="timeline-metric">Revenue: <strong>$20M+ ARR</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Assumptions -->
+    <section>
+      <h2>Model Assumptions</h2>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <h4>📊 Conversion Rates</h4>
+          <p>Conservative: 3% free→paid. Optimistic: 7% free→paid. Industry benchmarks: Spotify 3%, Dropbox 4%.</p>
+        </div>
+        <div class="usecase-card">
+          <h4>📉 Churn Rates</h4>
+          <p>B2C: 5% monthly (conservative), 3% (optimistic). B2B: 2% monthly. Marketplace creators: 10% annually.</p>
+        </div>
+        <div class="usecase-card">
+          <h4>💰 LTV:CAC</h4>
+          <p>Target 3:1 ratio. B2C CAC: $30. B2B CAC: $500. Marketplace CAC: $0 (creators bring audience).</p>
+        </div>
+        <div class="usecase-card">
+          <h4>📈 Viral Coefficient</h4>
+          <p>Conservative: 0.3 (each user brings 0.3 users). Optimistic: 0.8 (agent sharing drives virality).</p>
+        </div>
+        <div class="usecase-card">
+          <h4>💵 COGS</h4>
+          <p>LLM costs: 20-25% of revenue. Infrastructure: 5% of revenue. Payment processing: 3%. Total COGS: 28-33%.</p>
+        </div>
+        <div class="usecase-card">
+          <h4>🌍 Market Size</h4>
+          <p>TAM: $50B (AI assistants). SAM: $5B (personal + business). SOM: $500M (early adopters, US/EU).</p>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <h3>The Compounding Advantage</h3>
+        <p>
+          <strong>Four flywheels spinning together:</strong> B2C users invite friends via C2C social features (gift lists, scheduling).
+          Friends need their own assistants to participate, driving more B2C subscriptions. B2B businesses deploy agents to reach this growing consumer network.
+          Creators monetize audiences, bringing even more users. <strong>Each stream reinforces the others - this is how platforms achieve escape velocity.</strong>
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <span class="footer-divider">|</span>
+      <a href="/competition.html">Competition</a>
+      <span class="footer-divider">|</span>
+      <a href="/investments.html">Investments</a>
+      <span class="footer-divider">|</span>
+      <span class="current">Monetization</span>
+    </div>
+    <p>&copy; 2026 MACP. Confidential - Do not distribute.</p>
+  </footer>
+</body>
+</html>

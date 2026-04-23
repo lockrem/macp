@@ -39,5 +39,9 @@ tmp/
 xcuserdata/
 *.xcworkspace/xcuserdata/
 
+# iOS Secrets (API keys embedded in app - use Secrets.plist.template)
+**/Resources/Secrets.plist
+
 # CDK output (generated)
 cdk.out/
+*.zip

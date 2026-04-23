@@ -11,7 +11,7 @@ const createAgentSchema = z.object({
   personality: z.string().max(500).optional(),
   systemPrompt: z.string().max(2000).optional(),
   provider: z.enum(['anthropic', 'openai']).default('anthropic'),
-  modelId: z.string().default('claude-sonnet-4-20250514'),
+  modelId: z.string().default('claude-sonnet-4-5-20250929'),
   temperature: z.number().min(0).max(100).default(70),
   maxTokens: z.number().min(100).max(4000).default(1000),
   capabilities: z.array(z.object({
@@ -31,7 +31,8 @@ export function registerAgentRoutes(app: FastifyInstance): void {
   // Create a new agent
   app.post('/agents', async (req, reply) => {
     // TODO: Get userId from auth token
-    const userId = (req.headers['x-user-id'] as string) || 'demo-user';
+    const userId = req.user?.userId;
+    if (!userId) { reply.code(401); return { error: 'Authentication required' }; }
 
     const body = createAgentSchema.parse(req.body);
 
@@ -53,9 +54,10 @@ export function registerAgentRoutes(app: FastifyInstance): void {
   });
 
   // Get user's agents
-  app.get('/agents', async (req) => {
+  app.get('/agents', async (req, reply) => {
     // TODO: Get userId from auth token
-    const userId = (req.headers['x-user-id'] as string) || 'demo-user';
+    const userId = req.user?.userId;
+    if (!userId) { reply.code(401); return { error: 'Authentication required' }; }
 
     // TODO: Query from database
     // const userAgents = await db.select().from(agents).where(eq(agents.ownerId, userId));
@@ -69,7 +71,7 @@ export function registerAgentRoutes(app: FastifyInstance): void {
           displayName: 'My Claude',
           personality: 'Helpful and thoughtful',
           provider: 'anthropic',
-          modelId: 'claude-sonnet-4-20250514',
+          modelId: 'claude-sonnet-4-5-20250929',
           temperature: 70,
           maxTokens: 1000,
           isDefault: true,
@@ -90,7 +92,7 @@ export function registerAgentRoutes(app: FastifyInstance): void {
       displayName: 'My Claude',
       personality: 'Helpful and thoughtful',
       provider: 'anthropic',
-      modelId: 'claude-sonnet-4-20250514',
+      modelId: 'claude-sonnet-4-5-20250929',
     };
   });
 
@@ -121,7 +123,8 @@ export function registerAgentRoutes(app: FastifyInstance): void {
   // Set default agent
   app.post('/agents/:agentId/set-default', async (req, reply) => {
     const { agentId } = req.params as { agentId: string };
-    const userId = (req.headers['x-user-id'] as string) || 'demo-user';
+    const userId = req.user?.userId;
+    if (!userId) { reply.code(401); return { error: 'Authentication required' }; }
 
     // TODO: Update default status in database
 

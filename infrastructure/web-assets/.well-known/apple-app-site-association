@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "SZ86TQ75H9.app.macp.dev",
+        "paths": ["*"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["SZ86TQ75H9.app.macp.dev"]
+  }
+}

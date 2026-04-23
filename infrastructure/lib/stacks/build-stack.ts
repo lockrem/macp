@@ -1,7 +1,4 @@
 import * as cdk from 'aws-cdk-lib';
-import * as ecr from 'aws-cdk-lib/aws-ecr';
-import * as codebuild from 'aws-cdk-lib/aws-codebuild';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
@@ -12,9 +9,6 @@ export interface BuildStackProps extends cdk.StackProps {
 }
 
 export class BuildStack extends cdk.Stack {
-  public readonly repository: ecr.Repository;
-  public readonly buildProject: codebuild.Project;
-  public readonly sourceBucket: s3.Bucket;
   public readonly memoryBucket: s3.Bucket;
   public readonly archiveBucket: s3.Bucket;
   public readonly archiveKey: kms.Key;
@@ -22,34 +16,6 @@ export class BuildStack extends cdk.Stack {
 
   constructor(scope: Construct, id: string, props: BuildStackProps) {
     super(scope, id, props);
-
-    // ECR Repository for the API server image
-    this.repository = new ecr.Repository(this, 'Repository', {
-      repositoryName: `${props.prefix}-api`,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      emptyOnDelete: true,
-      imageScanOnPush: true,
-      lifecycleRules: [
-        {
-          maxImageCount: 10,
-          description: 'Keep only 10 images',
-        },
-      ],
-    });
-
-    // S3 bucket for source code uploads
-    this.sourceBucket = new s3.Bucket(this, 'SourceBucket', {
-      bucketName: `${props.prefix}-build-source-${this.account}`,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      lifecycleRules: [
-        {
-          expiration: cdk.Duration.days(7),
-        },
-      ],
-    });
 
     // S3 bucket for agent memory files (encrypted)
     this.memoryBucket = new s3.Bucket(this, 'MemoryBucket', {
@@ -135,94 +101,7 @@ export class BuildStack extends cdk.Stack {
       partitionKey: { name: 'conversationId', type: dynamodb.AttributeType.STRING },
     });
 
-    // CodeBuild project
-    this.buildProject = new codebuild.Project(this, 'BuildProject', {
-      projectName: `${props.prefix}-api-build`,
-      description: 'Builds the MACP API server Docker image',
-      source: codebuild.Source.s3({
-        bucket: this.sourceBucket,
-        path: 'source.zip',
-      }),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
-        privileged: true, // Required for Docker builds
-        computeType: codebuild.ComputeType.SMALL,
-      },
-      environmentVariables: {
-        AWS_ACCOUNT_ID: {
-          value: this.account,
-        },
-        AWS_REGION: {
-          value: this.region,
-        },
-        ECR_REPO_URI: {
-          value: this.repository.repositoryUri,
-        },
-        IMAGE_TAG: {
-          value: 'latest',
-        },
-      },
-      buildSpec: codebuild.BuildSpec.fromObject({
-        version: '0.2',
-        phases: {
-          pre_build: {
-            commands: [
-              'echo Logging in to Amazon ECR...',
-              'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com',
-              'echo Setting image tag...',
-              'export IMAGE_TAG=$(date +%Y%m%d%H%M%S)-$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)',
-            ],
-          },
-          build: {
-            commands: [
-              'echo Build started on `date`',
-              'echo Building the Docker image...',
-              'docker build -t $ECR_REPO_URI:$IMAGE_TAG -t $ECR_REPO_URI:latest -f packages/api/Dockerfile .',
-            ],
-          },
-          post_build: {
-            commands: [
-              'echo Build completed on `date`',
-              'echo Pushing the Docker image...',
-              'docker push $ECR_REPO_URI:$IMAGE_TAG',
-              'docker push $ECR_REPO_URI:latest',
-              'echo Writing image definitions file...',
-              'printf \'{"ImageURI":"%s"}\' $ECR_REPO_URI:$IMAGE_TAG > imageDetail.json',
-            ],
-          },
-        },
-        artifacts: {
-          files: ['imageDetail.json'],
-        },
-      }),
-      timeout: cdk.Duration.minutes(30),
-    });
-
-    // Grant CodeBuild permission to push to ECR
-    this.repository.grantPullPush(this.buildProject);
-
-    // Grant CodeBuild permission to read from S3
-    this.sourceBucket.grantRead(this.buildProject);
-
     // Outputs
-    new cdk.CfnOutput(this, 'RepositoryUri', {
-      value: this.repository.repositoryUri,
-      description: 'ECR Repository URI',
-      exportName: `${props.prefix}-ecr-uri`,
-    });
-
-    new cdk.CfnOutput(this, 'SourceBucketName', {
-      value: this.sourceBucket.bucketName,
-      description: 'S3 Bucket for source code uploads',
-      exportName: `${props.prefix}-source-bucket`,
-    });
-
-    new cdk.CfnOutput(this, 'BuildProjectName', {
-      value: this.buildProject.projectName,
-      description: 'CodeBuild project name',
-      exportName: `${props.prefix}-build-project`,
-    });
-
     new cdk.CfnOutput(this, 'MemoryBucketName', {
       value: this.memoryBucket.bucketName,
       description: 'S3 Bucket for agent memory files',

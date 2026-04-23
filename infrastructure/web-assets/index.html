@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MACP - Your Staff. Finally.</title>
+
+  <!-- iOS Smart App Banner -->
+  <meta name="apple-itunes-app" content="app-id=XXXXXXXXXX">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="MACP - Your Staff. Finally.">
+  <meta property="og:description" content="AI assistants that represent you—and talk to each other. The entourage you've always deserved.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://macp.io">
+  <meta property="og:image" content="https://macp.io/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MACP - Your Staff. Finally.">
+  <meta name="twitter:description" content="AI assistants that represent you—and talk to each other. The entourage you've always deserved.">
+
+  <!-- Theme -->
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --bg: #000;
+      --bg-secondary: #0a0a0a;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-tertiary: rgba(255, 255, 255, 0.4);
+      --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --gradient-2: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.3);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Gradient orbs background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: var(--accent);
+      top: -200px;
+      right: -200px;
+      opacity: 0.15;
+    }
+
+    .orb-2 {
+      width: 400px;
+      height: 400px;
+      background: #d946ef;
+      bottom: 20%;
+      left: -100px;
+      opacity: 0.1;
+      animation-delay: -10s;
+    }
+
+    .orb-3 {
+      width: 300px;
+      height: 300px;
+      background: var(--gold);
+      top: 50%;
+      right: 10%;
+      opacity: 0.08;
+      animation-delay: -5s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .logo-name {
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 600px) {
+      .logo-subtitle {
+        display: none;
+      }
+    }
+
+    .nav-cta {
+      padding: 10px 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .nav-cta:hover {
+      background: #5558e3;
+      transform: translateY(-1px);
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 20px 80px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero h1 {
+      font-size: clamp(48px, 10vw, 100px);
+      font-weight: 800;
+      line-height: 1.0;
+      max-width: 900px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .gradient-text {
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gold-text {
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero .subtitle {
+      font-size: clamp(18px, 2.5vw, 24px);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 48px;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .btn {
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--gradient-1);
+      color: white;
+      box-shadow: 0 4px 24px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* The Big Idea Section */
+    .big-idea {
+      position: relative;
+      z-index: 1;
+      padding: 120px 20px;
+      text-align: center;
+    }
+
+    .big-idea-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .big-idea h2 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+
+    .big-idea p {
+      font-size: 20px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .insight-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 24px;
+      padding: 48px;
+      margin-top: 48px;
+    }
+
+    .insight-box blockquote {
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .insight-box .attribution {
+      margin-top: 24px;
+      font-size: 16px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* Use Cases Section */
+    .use-cases {
+      position: relative;
+      z-index: 1;
+      padding: 120px 20px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .use-case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .use-case-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px;
+      transition: all 0.3s;
+    }
+
+    .use-case-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .use-case-card.featured {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    @media (max-width: 800px) {
+      .use-case-card.featured {
+        grid-column: span 1;
+      }
+    }
+
+    .use-case-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--gradient-1);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .use-case-card.featured .use-case-icon {
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    }
+
+    .use-case-label {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .use-case-card h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .use-case-card p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .use-case-example {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .use-case-card.featured .use-case-example {
+      color: var(--gold);
+    }
+
+    /* Network Effects Section */
+    .network {
+      position: relative;
+      z-index: 1;
+      padding: 120px 20px;
+      background: var(--bg-secondary);
+    }
+
+    .network-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .network h2 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+
+    .network > .network-content > p {
+      font-size: 20px;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto 64px;
+    }
+
+    .network-visual {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 64px;
+    }
+
+    @media (max-width: 800px) {
+      .network-visual {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+
+    .network-before, .network-after {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .network-after {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .network-label {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+    }
+
+    .network-after .network-label {
+      color: var(--accent);
+    }
+
+    .network-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .network-desc {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .network-arrow {
+      font-size: 48px;
+      color: var(--text-tertiary);
+    }
+
+    @media (max-width: 800px) {
+      .network-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+    .network-equation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 40px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+    }
+
+    .equation-item {
+      text-align: center;
+    }
+
+    .equation-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .equation-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .equation-sign {
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--text-tertiary);
+    }
+
+    /* Marketplace Section */
+    .marketplace {
+      position: relative;
+      z-index: 1;
+      padding: 120px 20px;
+    }
+
+    .marketplace-content {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .marketplace-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .marketplace-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.1) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+
+    .marketplace-header h2 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .marketplace-header p {
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+
+    .marketplace-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    @media (max-width: 900px) {
+      .marketplace-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .marketplace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .marketplace-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .marketplace-card:hover {
+      border-color: rgba(245, 158, 11, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .marketplace-icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+
+    .marketplace-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .marketplace-card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .marketplace-cta {
+      text-align: center;
+      padding: 32px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+    }
+
+    .marketplace-cta p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .marketplace-cta strong {
+      color: var(--gold);
+    }
+
+    /* Investment Thesis Section */
+    .thesis {
+      position: relative;
+      z-index: 1;
+      padding: 120px 20px;
+    }
+
+    .thesis-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .thesis h2 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .thesis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 700px) {
+      .thesis-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .thesis-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .thesis-item h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .thesis-item h3::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .thesis-item p {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .thesis-item.full-width {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .thesis-item.full-width h3::before {
+      background: var(--gold);
+    }
+
+    @media (max-width: 700px) {
+      .thesis-item.full-width {
+        grid-column: span 1;
+      }
+    }
+
+    /* CTA Section */
+    .cta {
+      position: relative;
+      z-index: 1;
+      padding: 120px 20px;
+      text-align: center;
+    }
+
+    .cta-content {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 80px 40px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 32px;
+    }
+
+    .cta h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .cta p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .cta-form {
+      display: flex;
+      gap: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      .cta-form {
+        flex-direction: column;
+      }
+    }
+
+    .cta-input {
+      flex: 1;
+      padding: 16px 20px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .cta-input:focus {
+      border-color: var(--accent);
+    }
+
+    .cta-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .cta-submit {
+      padding: 16px 32px;
+      background: var(--gradient-1);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .cta-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--accent-glow);
+    }
+
+    .cta-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 32px 0;
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    .cta-divider::before,
+    .cta-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--card-border);
+    }
+
+    .cta-agent {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.1) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 16px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    .cta-agent:hover {
+      transform: translateY(-2px);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    .cta-agent-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .cta-agent-text {
+      text-align: left;
+    }
+
+    .cta-agent-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .cta-agent-subtitle {
+      font-size: 14px;
+      color: var(--gold);
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .footer-links {
+      margin-bottom: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-links .current {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .footer-divider {
+      color: var(--card-border);
+      margin: 0 12px;
+    }
+
+    footer p {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    /* Agent View (for /{agentId} URLs) */
+    .agent-landing {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .agent-landing.show {
+      display: flex;
+    }
+
+    .marketing-site.hidden {
+      display: none;
+    }
+
+    .agent-card {
+      max-width: 400px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 48px 32px;
+      text-align: center;
+    }
+
+    .agent-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--gradient-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 48px;
+    }
+
+    .agent-card h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .agent-card .description {
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 32px;
+    }
+
+    .agent-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .agent-btn {
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .agent-btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .agent-btn-primary:hover {
+      background: #5558e3;
+    }
+
+    .agent-btn-secondary {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent);
+    }
+
+    .agent-btn-secondary:hover {
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .agent-loading {
+      display: none;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .agent-loading.show {
+      display: block;
+    }
+
+    .agent-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(99, 102, 241, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .agent-loading-text {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .agent-footer {
+      margin-top: 32px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
+    .agent-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-gradient">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Marketing Site -->
+  <div class="marketing-site" id="marketingSite">
+    <!-- Navigation -->
+    <nav>
+      <div class="logo">
+        <span class="logo-name">MACP</span>
+        <span class="logo-subtitle">Multi-Agent Communication Platform</span>
+      </div>
+      <!-- <a href="#contact" class="nav-cta">Talk to Our Agent</a> -->
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Now in private beta
+      </div>
+      <h1>The Missing Layer of <span class="gold-text">the AI Revolution</span></h1>
+      <p class="subtitle">AI promised transformation. It delivered chatbots. The problem? Agents can't talk to each other. <strong>We fix that.</strong></p>
+      <div class="hero-cta">
+        <!-- <a href="#contact" class="btn btn-primary">Talk to Our Agent</a> -->
+        <a href="#how-it-works" class="btn btn-primary">See the Vision</a>
+      </div>
+    </section>
+
+    <!-- The Big Idea -->
+    <section class="big-idea">
+      <div class="big-idea-content">
+        <h2>AI Agents Work in Isolation. That's the Problem.</h2>
+        <p>Every company is deploying AI. But these agents can't coordinate. They can't hand off context. They can't represent you to other systems. They're islands.</p>
+        <div class="insight-box">
+          <blockquote>The AI revolution is only a fraction complete. The next phase isn't smarter models—it's <strong>agents that work together</strong>.<br><br>MACP is the protocol for agent-to-agent communication.</blockquote>
+          <p class="attribution">This is how the rest of the AI revolution gets delivered.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="use-cases" id="how-it-works">
+      <div class="section-header">
+        <h2>When Agents Can Communicate, Everything Changes</h2>
+        <p>Businesses deploy AI staff. Consumers get personal assistants. And they all talk to each other.</p>
+      </div>
+      <div class="use-case-grid">
+        <!-- Business Staff -->
+        <div class="use-case-card">
+          <div class="use-case-icon">🏥</div>
+          <span class="use-case-label">Business Staff</span>
+          <h3>24/7 Intake Specialists</h3>
+          <p>Medical offices, law firms, and insurers deploy AI staff that conduct intake conversations, gather information, and route appropriately—around the clock.</p>
+          <div class="use-case-example">"Tell me about what brought you in today..."</div>
+        </div>
+
+        <div class="use-case-card">
+          <div class="use-case-icon">💼</div>
+          <span class="use-case-label">Business Staff</span>
+          <h3>Tireless Service Teams</h3>
+          <p>Your AI staff knows your products, policies, and brand voice. They handle inquiries with infinite patience. No hold times. No burnout.</p>
+          <div class="use-case-example">"I'd be happy to help with that return..."</div>
+        </div>
+
+        <!-- Personal Staff -->
+        <div class="use-case-card">
+          <div class="use-case-icon">👤</div>
+          <span class="use-case-label">Personal Staff</span>
+          <h3>Your Personal Assistant</h3>
+          <p>An AI that truly knows you—your preferences, your history, your style. It represents you and acts on your behalf.</p>
+          <div class="use-case-example">"She prefers window seats and hates layovers."</div>
+        </div>
+
+        <div class="use-case-card">
+          <div class="use-case-icon">🤝</div>
+          <span class="use-case-label">Personal Staff</span>
+          <h3>Your Assistant + You</h3>
+          <p>Walk into any conversation with your assistant by your side. They provide context, remember details, and suggest questions.</p>
+          <div class="use-case-example">"Based on your history, you should ask about..."</div>
+        </div>
+
+        <!-- The Network Effect - Featured -->
+        <div class="use-case-card featured">
+          <div class="use-case-icon">🎁</div>
+          <span class="use-case-label">The Network Effect</span>
+          <h3>"Ask Stephanie's assistant what she wants for Christmas."</h3>
+          <p>Instead of texting to ask, your assistant asks her assistant. Her assistant knows her wishlist, her sizes, what she just bought herself, and that she'd love an experience gift this year. No awkward asking. No duplicate gifts. This is how the wealthy have always operated—assistants coordinating behind the scenes. Now it's for everyone.</p>
+        </div>
+
+        <!-- More Personal Network -->
+        <div class="use-case-card">
+          <div class="use-case-icon">📅</div>
+          <span class="use-case-label">Staff Coordination</span>
+          <h3>Assistants Handle Scheduling</h3>
+          <p>"Have my assistant find a time with Mike's assistant." No more text ping-pong. Your staff coordinates with their staff.</p>
+          <div class="use-case-example">"Both calendars show Saturday at 2pm works."</div>
+        </div>
+
+        <div class="use-case-card">
+          <div class="use-case-icon">🍽️</div>
+          <span class="use-case-label">Staff Delegation</span>
+          <h3>Assistants Handle Errands</h3>
+          <p>"Have my assistant book a table at Chez Louis for Saturday." Your assistant talks to the restaurant's assistant. Done.</p>
+          <div class="use-case-example">"Confirmed. Window table, 7pm."</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Network Effects -->
+    <section class="network">
+      <div class="network-content">
+        <h2>Network Effects at the Infrastructure Layer</h2>
+        <p>Every business with AI staff is a node. Every consumer with an assistant is a connection. The more agents on the network, the more valuable the network becomes.</p>
+
+        <div class="network-visual">
+          <div class="network-before">
+            <div class="network-label">Before</div>
+            <div class="network-title">You do everything yourself</div>
+            <div class="network-desc">Scheduling, research, coordination, inquiries, bookings—all manual, all you.</div>
+          </div>
+          <div class="network-arrow">→</div>
+          <div class="network-after">
+            <div class="network-label">After</div>
+            <div class="network-title">Your staff handles it</div>
+            <div class="network-desc">Your assistant coordinates with their assistants. It's handled.</div>
+          </div>
+        </div>
+
+        <div class="network-equation">
+          <div class="equation-item">
+            <div class="equation-value">More Businesses</div>
+            <div class="equation-label">with AI staff</div>
+          </div>
+          <div class="equation-sign">+</div>
+          <div class="equation-item">
+            <div class="equation-value">More People</div>
+            <div class="equation-label">with personal assistants</div>
+          </div>
+          <div class="equation-sign">=</div>
+          <div class="equation-item">
+            <div class="equation-value">More Connections</div>
+            <div class="equation-label">staff talking to staff</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marketplace Section -->
+    <section class="marketplace">
+      <div class="marketplace-content">
+        <div class="marketplace-header">
+          <span class="marketplace-badge">MACP Originals</span>
+          <h2>Your Personal Staff, Ready to Serve</h2>
+          <p>Every user gets a curated team of AI assistants—built by the MACP team, free to use.</p>
+        </div>
+
+        <div class="marketplace-grid">
+          <div class="marketplace-card">
+            <div class="marketplace-icon">🏥</div>
+            <h3>Health Buddy</h3>
+            <p>Track symptoms, medications, and wellness goals with a caring companion</p>
+          </div>
+          <div class="marketplace-card">
+            <div class="marketplace-icon">💪</div>
+            <h3>Fitness Coach</h3>
+            <p>Personalized workouts, nutrition guidance, and motivation</p>
+          </div>
+          <div class="marketplace-card">
+            <div class="marketplace-icon">💼</div>
+            <h3>Work Assistant</h3>
+            <p>Stay organized with tasks, meetings, and project tracking</p>
+          </div>
+          <div class="marketplace-card">
+            <div class="marketplace-icon">💰</div>
+            <h3>Money Mentor</h3>
+            <p>Budget tracking, savings goals, and practical financial advice</p>
+          </div>
+          <div class="marketplace-card">
+            <div class="marketplace-icon">📔</div>
+            <h3>Journal Pal</h3>
+            <p>Daily reflections, gratitude journaling, and emotional support</p>
+          </div>
+          <div class="marketplace-card">
+            <div class="marketplace-icon">📚</div>
+            <h3>Study Buddy</h3>
+            <p>Learning companion that makes any subject fun and accessible</p>
+          </div>
+        </div>
+
+        <div class="marketplace-cta">
+          <p><strong>Coming soon:</strong> The Creator Marketplace—where professionals publish their own agents.<br>Golf pros, fitness trainers, coaches, tutors—<strong>anyone can build and monetize AI staff</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Investment Thesis -->
+    <section class="thesis">
+      <div class="thesis-content">
+        <h2>Why This. Why Now.</h2>
+        <div class="thesis-grid">
+          <div class="thesis-item">
+            <h3>Network Effects</h3>
+            <p>More AI staff means more reasons for people to have assistants. More assistants means more businesses deploy AI staff. Classic two-sided marketplace.</p>
+          </div>
+          <div class="thesis-item">
+            <h3>Data Moat</h3>
+            <p>Every conversation trains the assistant. Personal assistants accumulate knowledge about their person. The more you use it, the more indispensable it becomes.</p>
+          </div>
+          <div class="thesis-item">
+            <h3>The Technical Insight</h3>
+            <p>Under the hood, every person becomes an API. That's the infrastructure play. We're building the protocol for how AI assistants will communicate.</p>
+          </div>
+          <div class="thesis-item">
+            <h3>Multiple Revenue Streams</h3>
+            <p>B2B SaaS for business AI staff. Consumer subscriptions for personal assistants. Transaction fees for assistant-to-assistant commerce. API access for developers.</p>
+          </div>
+          <div class="thesis-item full-width">
+            <h3>Platform Potential</h3>
+            <p>Today, people create personal assistants. Tomorrow, professionals publish agents as a service—golf pros, trainers, coaches, companions. A marketplace of AI staff, with MACP as the platform and creators earning from every session.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section (disabled until functional)
+    <section class="cta" id="contact">
+      <div class="cta-content">
+        <h2>Experience It Yourself</h2>
+        <p>Talk to our Investor Relations agent. See what AI staff can do.</p>
+
+        <a href="#" class="cta-agent" id="talkToAgentBtn">
+          <div class="cta-agent-avatar">👔</div>
+          <div class="cta-agent-text">
+            <div class="cta-agent-title">Talk to Our IR Agent</div>
+            <div class="cta-agent-subtitle">Experience the product firsthand</div>
+          </div>
+        </a>
+
+        <div class="cta-divider">or leave your email</div>
+
+        <h2>Get Early Access</h2>
+        <form class="cta-form" id="investorForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+          <input type="email" name="email" class="cta-input" placeholder="your@email.com" required id="emailInput">
+          <button type="submit" class="cta-submit">Request Access</button>
+        </form>
+        <p id="formMessage" style="margin-top: 16px; display: none;"></p>
+      </div>
+    </section>
+    -->
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-links">
+        <span class="current">Home</span>
+        <span class="footer-divider">|</span>
+        <a href="/competition.html">Competition</a>
+        <span class="footer-divider">|</span>
+        <a href="/investments.html">Investments</a>
+        <span class="footer-divider">|</span>
+        <a href="/monetization.html">Monetization</a>
+      </div>
+      <p>&copy; 2026 MACP. The entourage you've always deserved.</p>
+    </footer>
+  </div>
+
+  <!-- Agent Landing (for /{agentId} URLs) -->
+  <div class="agent-landing" id="agentLanding">
+    <div class="agent-card">
+      <div class="agent-loading" id="agentLoading">
+        <div class="agent-spinner"></div>
+        <p class="agent-loading-text">Opening MACP...</p>
+      </div>
+
+      <div class="agent-avatar" id="agentAvatar">🤖</div>
+      <h1 id="agentName">AI Assistant</h1>
+      <p class="description" id="agentDescription">Tap below to start a conversation</p>
+
+      <div class="agent-buttons" id="agentButtons">
+        <a href="#" class="agent-btn agent-btn-primary" id="openAppBtn">Open in App</a>
+        <a href="#" class="agent-btn agent-btn-secondary" id="getAppBtn">Get the App</a>
+      </div>
+
+      <div class="agent-footer">
+        <p>Powered by <a href="https://macp.io">MACP</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Configuration
+      const APP_STORE_URL = 'https://apps.apple.com/app/id0000000000';
+      const CUSTOM_SCHEME = 'macp://';
+      const API_BASE = 'https://mmfhsdeuze.execute-api.us-east-1.amazonaws.com';
+      const IR_AGENT_ID = 'INVESTOR_RELATIONS_AGENT_ID'; // Replace with actual agent ID
+
+      // Get agent ID from URL path
+      const path = window.location.pathname;
+      const agentId = path.length > 1 ? path.substring(1) : null;
+
+      // DOM elements
+      const marketingSite = document.getElementById('marketingSite');
+      const agentLanding = document.getElementById('agentLanding');
+      const talkToAgentBtn = document.getElementById('talkToAgentBtn');
+
+      // Handle "Talk to Agent" button
+      if (talkToAgentBtn) {
+        talkToAgentBtn.href = `${CUSTOM_SCHEME}agent/${IR_AGENT_ID}`;
+        talkToAgentBtn.addEventListener('click', function(e) {
+          // Try to open the app
+          window.location.href = `${CUSTOM_SCHEME}agent/${IR_AGENT_ID}`;
+
+          // If still here after delay, redirect to agent landing
+          setTimeout(function() {
+            window.location.href = `/${IR_AGENT_ID}`;
+          }, 1500);
+        });
+      }
+
+      if (agentId && agentId !== 'index.html' && !agentId.startsWith('.')) {
+        // Show agent landing page
+        marketingSite.classList.add('hidden');
+        agentLanding.classList.add('show');
+
+        const agentLoading = document.getElementById('agentLoading');
+        const agentButtons = document.getElementById('agentButtons');
+        const agentAvatar = document.getElementById('agentAvatar');
+        const agentName = document.getElementById('agentName');
+        const agentDescription = document.getElementById('agentDescription');
+        const openAppBtn = document.getElementById('openAppBtn');
+        const getAppBtn = document.getElementById('getAppBtn');
+
+        const deepLink = `${CUSTOM_SCHEME}agent/${agentId}`;
+        openAppBtn.href = deepLink;
+        getAppBtn.href = APP_STORE_URL;
+
+        // Fetch agent info
+        fetchAgentInfo(agentId);
+
+        // Check if iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        if (isIOS) {
+          agentLoading.classList.add('show');
+          agentButtons.style.display = 'none';
+          window.location.href = deepLink;
+          setTimeout(function() {
+            agentLoading.classList.remove('show');
+            agentButtons.style.display = 'flex';
+          }, 1500);
+        }
+
+        openAppBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          agentLoading.classList.add('show');
+          agentButtons.style.display = 'none';
+          window.location.href = deepLink;
+          setTimeout(function() {
+            agentLoading.classList.remove('show');
+            agentButtons.style.display = 'flex';
+          }, 2000);
+        });
+
+        async function fetchAgentInfo(id) {
+          try {
+            const response = await fetch(`${API_BASE}/public/agent/${id}`);
+            if (response.ok) {
+              const agent = await response.json();
+              agentAvatar.textContent = agent.emoji || '👔';
+              agentAvatar.style.background = getColorGradient(agent.accentColor);
+              agentName.textContent = agent.name || 'AI Assistant';
+              agentDescription.textContent = agent.description || 'Tap below to start a conversation';
+              document.title = `${agent.name} - MACP`;
+            }
+          } catch (err) {
+            console.log('Could not fetch agent info:', err);
+          }
+        }
+
+        function getColorGradient(color) {
+          const colors = {
+            blue: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+            red: 'linear-gradient(135deg, #ef4444, #f87171)',
+            orange: 'linear-gradient(135deg, #f97316, #fbbf24)',
+            green: 'linear-gradient(135deg, #22c55e, #4ade80)',
+            purple: 'linear-gradient(135deg, #a855f7, #6366f1)',
+            cyan: 'linear-gradient(135deg, #06b6d4, #22d3ee)',
+            pink: 'linear-gradient(135deg, #ec4899, #f472b6)',
+          };
+          return colors[color] || 'linear-gradient(135deg, #f59e0b, #fbbf24)';
+        }
+      }
+
+      // Handle investor form
+      const form = document.getElementById('investorForm');
+      const formMessage = document.getElementById('formMessage');
+
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const email = document.getElementById('emailInput').value;
+
+          // Submit to Formspree
+          fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' }
+          }).then(response => {
+            if (response.ok) {
+              formMessage.style.display = 'block';
+              formMessage.style.color = '#22c55e';
+              formMessage.textContent = 'Thank you! We\'ll be in touch soon.';
+              form.reset();
+            } else {
+              throw new Error('Form submission failed');
+            }
+          }).catch(error => {
+            formMessage.style.display = 'block';
+            formMessage.style.color = '#ef4444';
+            formMessage.textContent = 'Something went wrong. Please try again.';
+          });
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

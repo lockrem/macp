@@ -6,5 +6,11 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:macp.io</string>
+		<string>applinks:www.macp.io</string>
+		<string>webcredentials:macp.io</string>
+	</array>
 </dict>
 </plist>

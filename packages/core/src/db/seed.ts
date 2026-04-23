@@ -41,7 +41,7 @@ async function seed() {
       displayName: "Alice's Claude",
       personality: 'Thoughtful, analytical, and curious. Enjoys exploring multiple perspectives.',
       provider: 'anthropic',
-      modelId: 'claude-sonnet-4-20250514',
+      modelId: 'claude-sonnet-4-5-20250929',
       temperature: 70,
       maxTokens: 1000,
       isDefault: true,

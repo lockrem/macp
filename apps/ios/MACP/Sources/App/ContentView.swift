@@ -5,13 +5,21 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if authService.isAuthenticated {
+            if !authService.isAuthReady {
+                // Show loading while auth state is being resolved (including token refresh)
+                VStack(spacing: 16) {
+                    ProgressView()
+                    Text("Loading...")
+                        .foregroundStyle(.secondary)
+                }
+            } else if authService.isAuthenticated {
                 MainTabView()
             } else {
                 SignInView()
             }
         }
         .animation(.default, value: authService.isAuthenticated)
+        .animation(.default, value: authService.isAuthReady)
     }
 }
 
@@ -22,25 +30,33 @@ struct MainTabView: View {
     @EnvironmentObject var conversationService: ConversationService
     @EnvironmentObject var archiveService: ArchiveService
     @EnvironmentObject var memoryService: MemoryService
+    @EnvironmentObject var rulesService: RulesService
+    @EnvironmentObject var contactService: ContactService
+    @EnvironmentObject var inboxService: InboxService
 
     var body: some View {
         TabView {
-            // Home - Chat with your agents (PRIMARY)
-            HomeView()
+            // Universal Chat - Orchestrated agent routing (PRIMARY)
+            // QR scanner is now in the Chat toolbar
+            UniversalChatView()
+                .environmentObject(agentStorage)
+                .environmentObject(inboxService)
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label("Chat", systemImage: "bubble.left.fill")
                 }
 
-            // Multi-agent conversations
-            ConversationsListView()
+            // Agents management - simplified single view
+            // Tap agent to edit, share button shows QR
+            AgentsTabView()
                 .tabItem {
-                    Label("Collab", systemImage: "bubble.left.and.bubble.right")
+                    Label("Agents", systemImage: "cpu.fill")
                 }
 
-            // Archives
-            ArchivesListView()
+            // People - your profile + contacts
+            PeopleTabView()
+                .environmentObject(contactService)
                 .tabItem {
-                    Label("History", systemImage: "archivebox")
+                    Label("People", systemImage: "person.2.fill")
                 }
 
             // Settings
@@ -56,6 +72,14 @@ struct MainTabView: View {
                     .environmentObject(conversationService)
                     .environmentObject(deepLinkHandler)
             }
+        }
+        .onAppear {
+            // Mark deep link handler ready once main UI is loaded
+            deepLinkHandler.markReady()
+        }
+        .task {
+            // Fetch inbox items on app launch
+            await inboxService.fetchInboxItems()
         }
     }
 }

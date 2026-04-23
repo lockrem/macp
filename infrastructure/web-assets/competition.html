@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Competitive Landscape - MACP</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Theme -->
+  <meta name="theme-color" content="#000000">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --bg: #000;
+      --bg-secondary: #0a0a0a;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-tertiary: rgba(255, 255, 255, 0.4);
+      --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --gold: #f59e0b;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: var(--accent);
+      top: -200px;
+      right: -200px;
+      opacity: 0.15;
+    }
+
+    .orb-2 {
+      width: 400px;
+      height: 400px;
+      background: #d946ef;
+      bottom: 20%;
+      left: -100px;
+      opacity: 0.1;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-decoration: none;
+    }
+
+    .logo-name {
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-badge {
+      padding: 6px 14px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 120px 20px 80px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .page-header .subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Section */
+    section {
+      margin-bottom: 64px;
+    }
+
+    section h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    section h2::before {
+      content: '';
+      width: 4px;
+      height: 28px;
+      background: var(--gradient-1);
+      border-radius: 2px;
+    }
+
+    /* Category Cards */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .category-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    .category-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .category-card .category-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .competitor-list {
+      list-style: none;
+    }
+
+    .competitor-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .competitor-list li:last-child {
+      border-bottom: none;
+    }
+
+    .competitor-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .competitor-detail {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .competitor-gap {
+      font-size: 12px;
+      padding: 4px 10px;
+      background: rgba(99, 102, 241, 0.15);
+      border-radius: 100px;
+      color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .comparison-table th {
+      background: rgba(255, 255, 255, 0.03);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .comparison-table th:first-child {
+      width: 200px;
+    }
+
+    .comparison-table td {
+      font-size: 14px;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comparison-table .feature-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .check {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .partial {
+      color: var(--gold);
+    }
+
+    .none {
+      color: var(--text-tertiary);
+    }
+
+    .highlight-col {
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    /* Positioning Matrix */
+    .matrix-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .matrix {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background:
+        linear-gradient(to right, var(--card-border) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--card-border) 1px, transparent 1px);
+      background-size: 25% 25%;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+    }
+
+    .matrix-label {
+      position: absolute;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .matrix-label.left {
+      left: -80px;
+      top: 50%;
+      transform: rotate(-90deg) translateX(-50%);
+      transform-origin: left center;
+    }
+
+    .matrix-label.bottom {
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .matrix-point {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      transform: translate(-50%, -50%);
+      cursor: default;
+      transition: transform 0.2s;
+    }
+
+    .matrix-point:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .matrix-point.macp {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+      border: 2px solid var(--accent);
+      color: var(--text);
+      width: 100px;
+      height: 100px;
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    .matrix-point.competitor {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+    }
+
+    /* Key Insight */
+    .insight-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 20px;
+      padding: 32px;
+      margin-top: 32px;
+    }
+
+    .insight-box h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .insight-box p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .insight-box strong {
+      color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav {
+        padding: 16px 20px;
+      }
+
+      .logo-subtitle {
+        display: none;
+      }
+
+      .comparison-table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .matrix-container {
+        padding: 20px;
+      }
+
+      .matrix {
+        height: 300px;
+      }
+
+      .matrix-label.left {
+        display: none;
+      }
+
+      .matrix-point {
+        width: 60px;
+        height: 60px;
+        font-size: 10px;
+      }
+
+      .matrix-point.macp {
+        width: 70px;
+        height: 70px;
+        font-size: 11px;
+      }
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+      margin-top: 40px;
+    }
+
+    footer p {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    .footer-links {
+      margin-bottom: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-links .current {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .footer-divider {
+      color: var(--card-border);
+      margin: 0 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-gradient">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-name">MACP</span>
+      <span class="logo-subtitle">Multi-Agent Communication Platform</span>
+    </a>
+    <span class="nav-badge">Confidential</span>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+    <header class="page-header">
+      <h1>Competitive Landscape</h1>
+      <p class="subtitle">The AI agent market is fragmented. Everyone's building agents. Nobody's connecting them. That's our opportunity.</p>
+    </header>
+
+    <!-- Market Categories -->
+    <section>
+      <h2>Market Categories</h2>
+      <div class="category-grid">
+        <div class="category-card">
+          <h3>Conversational AI Platforms</h3>
+          <p class="category-desc">Enterprise chatbots and customer service automation</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Intercom</div>
+                <div class="competitor-detail">$1.8B valuation. Customer messaging + Fin AI agent.</div>
+              </div>
+              <span class="competitor-gap">Single-agent</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Drift (Salesloft)</div>
+                <div class="competitor-detail">Acquired for $575M. Sales-focused chatbots.</div>
+              </div>
+              <span class="competitor-gap">No memory</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Ada</div>
+                <div class="competitor-detail">$1.2B valuation. Automated customer service.</div>
+              </div>
+              <span class="competitor-gap">Script-based</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Kore.ai</div>
+                <div class="competitor-detail">$150M raised. Enterprise virtual assistants.</div>
+              </div>
+              <span class="competitor-gap">Complex setup</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>AI Agent Frameworks</h3>
+          <p class="category-desc">Developer tools for building autonomous agents</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">LangChain / LangGraph</div>
+                <div class="competitor-detail">Most popular framework. $25M raised.</div>
+              </div>
+              <span class="competitor-gap">Dev-only</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">AutoGPT / AgentGPT</div>
+                <div class="competitor-detail">150k+ GitHub stars. Autonomous task execution.</div>
+              </div>
+              <span class="competitor-gap">No multi-agent</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">CrewAI</div>
+                <div class="competitor-detail">Multi-agent framework. Growing rapidly.</div>
+              </div>
+              <span class="competitor-gap">No persistence</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Microsoft AutoGen</div>
+                <div class="competitor-detail">Multi-agent conversations. Research-focused.</div>
+              </div>
+              <span class="competitor-gap">Technical only</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>Personal AI Assistants</h3>
+          <p class="category-desc">Consumer-facing AI companions and assistants</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Character.AI</div>
+                <div class="competitor-detail">$1B valuation. Entertainment-focused chatbots.</div>
+              </div>
+              <span class="competitor-gap">No utility</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Replika</div>
+                <div class="competitor-detail">2M+ users. Emotional companion focus.</div>
+              </div>
+              <span class="competitor-gap">Single agent</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Inflection Pi</div>
+                <div class="competitor-detail">$1.5B raised. Personal AI assistant.</div>
+              </div>
+              <span class="competitor-gap">No network</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Rabbit R1 / Humane</div>
+                <div class="competitor-detail">Hardware AI assistants. Mixed reception.</div>
+              </div>
+              <span class="competitor-gap">Device-locked</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>Enterprise AI Platforms</h3>
+          <p class="category-desc">Large-scale AI deployment and orchestration</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Salesforce Einstein</div>
+                <div class="competitor-detail">Integrated into Salesforce CRM ecosystem.</div>
+              </div>
+              <span class="competitor-gap">CRM-only</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Microsoft Copilot</div>
+                <div class="competitor-detail">Embedded across Microsoft 365 suite.</div>
+              </div>
+              <span class="competitor-gap">Closed system</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Google Vertex AI</div>
+                <div class="competitor-detail">GCP's AI/ML platform with agents.</div>
+              </div>
+              <span class="competitor-gap">Infrastructure</span>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Amazon Bedrock</div>
+                <div class="competitor-detail">AWS managed AI services + agents.</div>
+              </div>
+              <span class="competitor-gap">No consumer</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature Comparison -->
+    <section>
+      <h2>Feature Comparison</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="highlight-col">MACP</th>
+            <th>LangChain</th>
+            <th>CrewAI</th>
+            <th>Intercom</th>
+            <th>Character.AI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feature-name">Agent-to-Agent Communication</td>
+            <td class="highlight-col"><span class="check">Native</span></td>
+            <td><span class="partial">Manual</span></td>
+            <td><span class="partial">Limited</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Persistent Memory</td>
+            <td class="highlight-col"><span class="check">Semantic</span></td>
+            <td><span class="partial">Basic</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="partial">Session</span></td>
+            <td><span class="partial">Limited</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Multi-Agent Orchestration</td>
+            <td class="highlight-col"><span class="check">Intelligent</span></td>
+            <td><span class="partial">Manual</span></td>
+            <td><span class="check">Yes</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Automatic Learning</td>
+            <td class="highlight-col"><span class="check">Facts + Rules</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="partial">Limited</span></td>
+            <td><span class="partial">Basic</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Consumer App</td>
+            <td class="highlight-col"><span class="check">iOS Native</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="partial">Widget</span></td>
+            <td><span class="check">Yes</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Agent Marketplace</td>
+            <td class="highlight-col"><span class="check">Built-in</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="check">Yes</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Real-time Streaming</td>
+            <td class="highlight-col"><span class="check">WebSocket</span></td>
+            <td><span class="partial">SSE</span></td>
+            <td><span class="partial">Basic</span></td>
+            <td><span class="check">Yes</span></td>
+            <td><span class="check">Yes</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Multi-LLM Support</td>
+            <td class="highlight-col"><span class="check">4 Providers</span></td>
+            <td><span class="check">Many</span></td>
+            <td><span class="check">Many</span></td>
+            <td><span class="none">OpenAI</span></td>
+            <td><span class="none">Proprietary</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">No-Code Agent Creation</td>
+            <td class="highlight-col"><span class="check">Yes</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="none">No</span></td>
+            <td><span class="partial">Limited</span></td>
+            <td><span class="check">Yes</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Positioning Matrix -->
+    <section>
+      <h2>Market Positioning</h2>
+      <div class="matrix-container">
+        <div class="matrix">
+          <span class="matrix-label left">Network Effects</span>
+          <span class="matrix-label bottom">Technical Sophistication</span>
+
+          <!-- MACP - Top Right -->
+          <div class="matrix-point macp" style="left: 80%; top: 15%;">MACP</div>
+
+          <!-- Competitors -->
+          <div class="matrix-point competitor" style="left: 25%; top: 70%;">Intercom</div>
+          <div class="matrix-point competitor" style="left: 75%; top: 75%;">LangChain</div>
+          <div class="matrix-point competitor" style="left: 65%; top: 65%;">CrewAI</div>
+          <div class="matrix-point competitor" style="left: 30%; top: 35%;">Character.AI</div>
+          <div class="matrix-point competitor" style="left: 15%; top: 85%;">Replika</div>
+          <div class="matrix-point competitor" style="left: 85%; top: 85%;">AutoGen</div>
+          <div class="matrix-point competitor" style="left: 45%; top: 50%;">Inflection</div>
+          <div class="matrix-point competitor" style="left: 55%; top: 80%;">AutoGPT</div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <h3>The Gap in the Market</h3>
+        <p>
+          <strong>Developer frameworks</strong> (LangChain, CrewAI) have technical sophistication but no network effects and require coding skills.
+          <strong>Consumer apps</strong> (Character.AI, Replika) have users but limited technical depth and no agent interoperability.
+          <strong>Enterprise platforms</strong> (Intercom, Salesforce) are siloed within their ecosystems.
+        </p>
+        <p style="margin-top: 16px;">
+          <strong>MACP occupies the unique position</strong> of combining sophisticated multi-agent orchestration with consumer accessibility AND network effects from agent-to-agent communication. We're building the TCP/IP of AI agents.
+        </p>
+      </div>
+    </section>
+
+    <!-- Direct Competitors -->
+    <section>
+      <h2>Closest Competitors & Differentiation</h2>
+      <div class="category-grid">
+        <div class="category-card">
+          <h3>vs. CrewAI</h3>
+          <p class="category-desc">Multi-agent framework gaining traction</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Their strength</div>
+                <div class="competitor-detail">Strong developer community, flexible agent roles</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Our advantage</div>
+                <div class="competitor-detail">Consumer app, persistent memory, no coding required, agent marketplace</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>vs. Character.AI</h3>
+          <p class="category-desc">Leading consumer AI companion</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Their strength</div>
+                <div class="competitor-detail">Massive user base, entertainment focus, character variety</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Our advantage</div>
+                <div class="competitor-detail">Utility focus, agent-to-agent network, automatic learning, multi-LLM</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>vs. Inflection Pi</h3>
+          <p class="category-desc">Well-funded personal AI assistant</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Their strength</div>
+                <div class="competitor-detail">$1.5B funding, strong AI research team, polished UX</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Our advantage</div>
+                <div class="competitor-detail">Multi-agent network, B2B + B2C, marketplace model, open ecosystem</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>vs. Microsoft Copilot</h3>
+          <p class="category-desc">Big tech's AI assistant play</p>
+          <ul class="competitor-list">
+            <li>
+              <div>
+                <div class="competitor-name">Their strength</div>
+                <div class="competitor-detail">Distribution, enterprise relationships, product integration</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="competitor-name">Our advantage</div>
+                <div class="competitor-detail">Platform-agnostic, agent interoperability, consumer-first, creator economy</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Market Opportunity -->
+    <section>
+      <h2>Market Opportunity</h2>
+      <div class="insight-box" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%); border-color: rgba(99, 102, 241, 0.3);">
+        <h3 style="color: var(--accent);">The Numbers</h3>
+        <p>
+          <strong>Conversational AI market:</strong> $13.9B (2024) growing to $49.9B by 2030 (24% CAGR)<br>
+          <strong>AI agent market:</strong> $5.1B (2024) growing to $47.1B by 2030 (44% CAGR)<br>
+          <strong>Personal AI assistant market:</strong> $4.2B (2024) growing to $21.5B by 2030 (31% CAGR)
+        </p>
+        <p style="margin-top: 16px;">
+          MACP sits at the intersection of all three markets. <strong>The agent-to-agent communication layer doesn't exist yet.</strong> We're not competing for existing market share - we're creating a new category.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <span class="footer-divider">|</span>
+      <span class="current">Competition</span>
+      <span class="footer-divider">|</span>
+      <a href="/investments.html">Investments</a>
+      <span class="footer-divider">|</span>
+      <a href="/monetization.html">Monetization</a>
+    </div>
+    <p>&copy; 2026 MACP. Confidential - Do not distribute.</p>
+  </footer>
+</body>
+</html>

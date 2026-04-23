@@ -9,37 +9,82 @@ import { ulid } from 'ulid';
 
 const EXTRACTION_SYSTEM_PROMPT = `You are a fact extraction system. Your job is to extract factual information about the USER from conversations.
 
-IMPORTANT RULES:
-1. Only extract facts about the USER (the human), not the assistant
-2. Facts must be specific, not opinions or preferences (unless explicitly stated)
-3. Assign each fact to a category
-4. Rate confidence as:
-   - "high": User explicitly stated this fact
-   - "medium": Fact can be reasonably inferred
-   - "low": Fact is implied but uncertain
+CRITICAL RULES FOR SOURCE VERIFICATION:
 
-COMMON CATEGORIES (create new ones if needed):
-- health: Medical conditions, medications, doctors, symptoms, allergies
-- exercise: Workouts, fitness routines, sports, physical activities
-- personal: Age, birthday, family, location, relationships
-- employment: Job, employer, work history, skills, income
-- financial: Banking, investments, insurance, major purchases
-- preferences: Likes, dislikes, hobbies, interests
-- travel: Trips, destinations, travel plans
-- education: Schools, degrees, certifications, learning
+1. ONLY extract facts the USER DIRECTLY STATED
+   - The user must have explicitly said this themselves
+   - "User:" messages are from the user - these are valid sources
+   - "Assistant:" messages are from AI agents - be careful with these
+
+2. ALSO extract EVENT OUTCOMES that actually happened:
+   - Reservations that were confirmed
+   - Appointments that were booked
+   - Orders that were placed
+   - Actions that were completed
+
+3. DO NOT extract facts that AI agents CLAIMED about the user:
+   - If an agent said "the user has allergies" but the user didn't confirm it, DO NOT RECORD
+   - Agents may hallucinate or make assumptions - these are NOT facts
+   - Only record agent statements if the user CONFIRMED them
+
+4. Confidence ratings:
+   - "high": User EXPLICITLY stated this fact directly
+   - "medium": User confirmed something an agent mentioned
+   - "low": Can be reasonably inferred from user's direct statements
+
+CONTEXTUAL ASSUMPTIONS - Apply common sense:
+- Wake up times: Assume AM unless explicitly stated PM (people wake up in the morning)
+- Bed times: Assume PM unless explicitly stated AM
+- Work hours: Assume standard business hours unless stated otherwise
+- Meals: Breakfast=morning, Lunch=midday, Dinner=evening
+- "6 o'clock" for wake time = 6:00 AM, "6 o'clock" for dinner = 6:00 PM
+- Vague times like "around 6", "just before 7" should include the approximation
+
+SYNONYM HANDLING - Map these to standardized keys:
+- "food intolerances", "food sensitivities", "allergies", "can't eat" → key: "dietary_restrictions"
+- "job", "occupation", "career", "work as", "profession" → key: "occupation"
+- "hobbies", "interests", "like to do", "enjoy" → key: "hobbies"
+- "wake up time", "get up at", "morning routine starts" → key: "wake_time"
+- "pets", "dog", "cat", "animals I have" → key: "pets"
+- "family", "spouse", "kids", "children", "married" → key: "family_members"
+- "goals", "focused on", "working toward" → key: "current_goals"
+
+USE THESE EXACT CATEGORIES (do not create new ones):
+- identity: Name, age, birthday, location, email, phone, personal details
+- dietary: Allergies, diet restrictions, food preferences, vegetarian/vegan, intolerances
+- health: Medical conditions, medications, doctors, symptoms, exercise, fitness
+- preferences: Likes, dislikes, hobbies, interests, favorite things, travel preferences
+- wishlist: Items user wants, things they've been looking for, gift ideas
+- financial: Banking, investments, insurance, mortgage, budget, major purchases
+- schedule: Availability, routines, appointments, reservations, time preferences
+- family: Spouse, children, parents, siblings, pets, relationships
+- work: Job, employer, career, skills, colleagues, education, work history
+- general: Anything that doesn't fit the above categories
+
+PREFERRED KEYS (use these when applicable):
+- identity: "name", "birthday", "location"
+- work: "occupation"
+- preferences: "hobbies", "favorite_cuisine"
+- family: "pets", "family_members"
+- dietary: "dietary_restrictions"
+- health: "medications", "health_conditions"
+- schedule: "wake_time"
+- financial: "financial_goals"
+- wishlist: "wishlist_item"
+- general: "current_goals"
 
 OUTPUT FORMAT (JSON array):
 [
   {
-    "category": "health",
-    "categoryDisplayName": "Health & Medical",
-    "key": "current_medications",
-    "value": ["Lisinopril 10mg daily", "Metformin 500mg twice daily"],
+    "category": "schedule",
+    "categoryDisplayName": "Schedule",
+    "key": "wake_time",
+    "value": "5:55 AM",
     "confidence": "high"
   }
 ]
 
-If no facts can be extracted, return an empty array: []`;
+If no VERIFIED facts can be extracted, return an empty array: []`;
 
 interface ConversationMessage {
   role: 'user' | 'assistant';
@@ -66,7 +111,7 @@ export async function extractFactsFromConversation(
     };
   }
 
-  const adapter = createClaudeAdapter(key, 'claude-sonnet-4-20250514');
+  const adapter = createClaudeAdapter(key, 'claude-sonnet-4-5-20250929');
 
   // Format conversation for the LLM
   const conversationText = messages
@@ -146,7 +191,7 @@ export async function generateLLMSummary(
     return facts.map(f => `${f.key}: ${JSON.stringify(f.value)}`).join('. ');
   }
 
-  const adapter = createClaudeAdapter(key, 'claude-sonnet-4-20250514');
+  const adapter = createClaudeAdapter(key, 'claude-sonnet-4-5-20250929');
 
   const factsText = facts
     .map(f => `- ${f.key}: ${JSON.stringify(f.value)}`)
@@ -172,6 +217,162 @@ Write only the summary, no preamble.`;
     console.error('[FactExtraction] Failed to generate summary:', error);
     // Fall back to simple summary
     return facts.map(f => `${f.key}: ${JSON.stringify(f.value)}`).join('. ');
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Introduction-specific Fact Extraction
+// Enhanced extraction for when users are deliberately sharing information
+// -----------------------------------------------------------------------------
+
+const INTRODUCTION_EXTRACTION_PROMPT = `You are a fact extraction system analyzing an INTRODUCTION CONVERSATION.
+
+The user has deliberately chosen to share information about themselves to help personalize their AI assistant. This means:
+1. Extract MORE facts than you normally would - the user wants to share
+2. Use HIGHER confidence levels - the user is intentionally providing this information
+3. Be thorough - capture all personal details, preferences, and relevant information
+
+IMPORTANT RULES:
+1. Only extract facts about the USER (the human), not the assistant
+2. Since this is an introduction, most facts should be "high" confidence
+3. Extract both explicit facts AND reasonable inferences
+4. Create comprehensive category assignments
+
+CONTEXTUAL ASSUMPTIONS - Apply common sense:
+- Wake up times: Assume AM unless explicitly stated PM (people wake up in the morning)
+- Bed times: Assume PM unless explicitly stated AM
+- Work hours: Assume standard business hours unless stated otherwise
+- Meals: Breakfast=morning, Lunch=midday, Dinner=evening
+- "6 o'clock" for wake time = 6:00 AM, "6 o'clock" for dinner = 6:00 PM
+- Vague times like "around 6", "just before 7" should include the approximation (e.g., "around 6:00 AM")
+
+SYNONYM HANDLING - Map these to standardized keys:
+- "food intolerances", "food sensitivities", "allergies", "can't eat" → key: "dietary_restrictions"
+- "job", "occupation", "career", "work as", "profession" → key: "occupation"
+- "hobbies", "interests", "like to do", "enjoy" → key: "hobbies"
+- "wake up time", "get up at", "morning routine starts" → key: "wake_time"
+- "pets", "dog", "cat", "animals I have" → key: "pets"
+- "family", "spouse", "kids", "children", "married" → key: "family_members"
+- "goals", "focused on", "working toward" → key: "current_goals"
+
+USE THESE EXACT CATEGORIES (do not create new ones):
+- identity: Name, age, birthday, location, email, phone, personal details
+- dietary: Allergies, diet restrictions, food preferences, vegetarian/vegan, intolerances
+- health: Medical conditions, medications, doctors, symptoms, exercise, fitness
+- preferences: Likes, dislikes, hobbies, interests, favorite things, travel preferences
+- wishlist: Items user wants, things they've been looking for, gift ideas
+- financial: Banking, investments, insurance, mortgage, budget, major purchases
+- schedule: Availability, routines, appointments, reservations, time preferences
+- family: Spouse, children, parents, siblings, pets, relationships
+- work: Job, employer, career, skills, colleagues, education, work history
+- general: Anything that doesn't fit the above categories
+
+PREFERRED KEYS (use these when applicable):
+- identity: "name", "birthday", "location"
+- work: "occupation"
+- preferences: "hobbies", "favorite_cuisine"
+- family: "pets", "family_members"
+- dietary: "dietary_restrictions"
+- health: "medications", "health_conditions"
+- schedule: "wake_time"
+- financial: "financial_goals"
+- wishlist: "wishlist_item"
+- general: "current_goals"
+
+OUTPUT FORMAT (JSON array):
+[
+  {
+    "category": "schedule",
+    "categoryDisplayName": "Schedule",
+    "key": "wake_time",
+    "value": "Just before 6:00 AM",
+    "confidence": "high"
+  }
+]
+
+Be thorough! Extract every relevant fact the user shared.`;
+
+/**
+ * Extracts facts from an introduction conversation with enhanced extraction
+ * Uses higher confidence and extracts more facts since user is deliberately sharing
+ */
+export async function extractFactsFromIntroduction(
+  conversationId: string,
+  messages: ConversationMessage[],
+  apiKey?: string
+): Promise<FactExtractionResult> {
+  const key = apiKey || process.env.ANTHROPIC_API_KEY;
+
+  if (!key) {
+    console.warn('[FactExtraction] No API key available, skipping extraction');
+    return {
+      conversationId,
+      extractedAt: new Date().toISOString(),
+      factsByCategory: {},
+    };
+  }
+
+  const adapter = createClaudeAdapter(key, 'claude-sonnet-4-5-20250929');
+
+  // Format conversation for the LLM
+  const conversationText = messages
+    .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+    .join('\n\n');
+
+  const userPrompt = `Extract ALL facts about the USER from this introduction conversation. The user is deliberately sharing information to help personalize their experience.
+
+${conversationText}
+
+Be thorough! This is an introduction so extract everything relevant. Return a JSON array of extracted facts.`;
+
+  try {
+    const response = await adapter.generate({
+      messages: [{ role: 'user', content: userPrompt }],
+      systemPrompt: INTRODUCTION_EXTRACTION_PROMPT,
+      maxTokens: 3000, // Higher limit for comprehensive extraction
+      temperature: 0.1,
+    });
+
+    // Parse the JSON response
+    const jsonMatch = response.content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.log('[FactExtraction] No JSON array found in introduction response');
+      return {
+        conversationId,
+        extractedAt: new Date().toISOString(),
+        factsByCategory: {},
+      };
+    }
+
+    const extractedFacts: ExtractedFact[] = JSON.parse(jsonMatch[0]);
+
+    // Group facts by category
+    const factsByCategory: Record<string, ExtractedFact[]> = {};
+    for (const fact of extractedFacts) {
+      const category = fact.category.toLowerCase().replace(/\s+/g, '-');
+      if (!factsByCategory[category]) {
+        factsByCategory[category] = [];
+      }
+      factsByCategory[category].push({
+        ...fact,
+        category,
+      });
+    }
+
+    console.log(`[FactExtraction] Extracted ${extractedFacts.length} facts from introduction ${conversationId}`);
+
+    return {
+      conversationId,
+      extractedAt: new Date().toISOString(),
+      factsByCategory,
+    };
+  } catch (error) {
+    console.error('[FactExtraction] Failed to extract facts from introduction:', error);
+    return {
+      conversationId,
+      extractedAt: new Date().toISOString(),
+      factsByCategory: {},
+    };
   }
 }
 

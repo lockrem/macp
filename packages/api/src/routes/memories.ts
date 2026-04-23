@@ -1,29 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import {
-  S3Client,
-  GetObjectCommand,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  ListObjectsV2Command,
-} from '@aws-sdk/client-s3';
+import { getDatabase, userMemoryFacts } from '@macp/core';
+import { eq, and, sql, desc } from 'drizzle-orm';
+import { ulid } from 'ulid';
 import type {
   MemoryIndex,
   MemoryCategory,
   MemoryFact,
   MemoryCategoryMeta,
-  MemoryCache,
-  FactIndexEntry,
-  FactAvailabilityResponse,
 } from '@macp/shared';
-import { DEFAULT_SEMANTIC_TAGS } from '@macp/shared';
-
-// S3 client - uses default credentials from environment/IAM role
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
-});
-
-const MEMORY_BUCKET = process.env.MEMORY_BUCKET || 'macp-dev-memories';
 
 // -----------------------------------------------------------------------------
 // Validation Schemas
@@ -44,296 +29,73 @@ const memoryFactSchema = z.object({
   supersedes: z.string().optional(),
 });
 
-const memoryCategorySchema = z.object({
-  category: z.string(),
-  displayName: z.string(),
-  userId: z.string(),
-  lastUpdated: z.string(),
-  summary: z.string(),
-  facts: z.array(memoryFactSchema),
-});
-
 // -----------------------------------------------------------------------------
-// Helper Functions
+// Helper Functions (DB-backed)
 // -----------------------------------------------------------------------------
 
-async function getMemoryIndex(userId: string): Promise<MemoryIndex | null> {
-  const key = `memories/${userId}/_index.json`;
+async function getMemoryIndex(userId: string): Promise<MemoryIndex> {
+  const db = getDatabase();
 
-  try {
-    const response = await s3Client.send(new GetObjectCommand({
-      Bucket: MEMORY_BUCKET,
-      Key: key,
-    }));
+  // Get category counts from DB
+  const rows = await db.select({
+    category: userMemoryFacts.category,
+    factCount: sql<number>`count(*)::int`,
+    lastUpdated: sql<string>`max(${userMemoryFacts.learnedAt})::text`,
+  })
+    .from(userMemoryFacts)
+    .where(eq(userMemoryFacts.userId, userId))
+    .groupBy(userMemoryFacts.category);
 
-    const body = await response.Body?.transformToString();
-    if (!body) return null;
-
-    return JSON.parse(body) as MemoryIndex;
-  } catch (error: any) {
-    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
-      return null;
-    }
-    throw error;
-  }
-}
-
-async function saveMemoryIndex(index: MemoryIndex): Promise<void> {
-  const key = `memories/${index.userId}/_index.json`;
-
-  await s3Client.send(new PutObjectCommand({
-    Bucket: MEMORY_BUCKET,
-    Key: key,
-    Body: JSON.stringify(index, null, 2),
-    ContentType: 'application/json',
-    ServerSideEncryption: 'AES256',
+  const categories: MemoryCategoryMeta[] = rows.map(row => ({
+    name: row.category,
+    displayName: formatCategoryName(row.category),
+    factCount: row.factCount,
+    lastUpdated: row.lastUpdated || new Date().toISOString(),
   }));
+
+  const totalFacts = categories.reduce((sum, c) => sum + c.factCount, 0);
+
+  return {
+    userId,
+    categories,
+    totalFacts,
+    lastUpdated: categories.length > 0
+      ? categories.reduce((latest, c) => c.lastUpdated > latest ? c.lastUpdated : latest, categories[0].lastUpdated)
+      : new Date().toISOString(),
+  };
 }
 
 async function getMemoryCategory(userId: string, category: string): Promise<MemoryCategory | null> {
-  const key = `memories/${userId}/${category}.json`;
+  const db = getDatabase();
 
-  try {
-    const response = await s3Client.send(new GetObjectCommand({
-      Bucket: MEMORY_BUCKET,
-      Key: key,
-    }));
+  const rows = await db.select().from(userMemoryFacts)
+    .where(and(
+      eq(userMemoryFacts.userId, userId),
+      eq(userMemoryFacts.category, category)
+    ))
+    .orderBy(desc(userMemoryFacts.learnedAt));
 
-    const body = await response.Body?.transformToString();
-    if (!body) return null;
+  if (rows.length === 0) return null;
 
-    return JSON.parse(body) as MemoryCategory;
-  } catch (error: any) {
-    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
-      return null;
-    }
-    throw error;
-  }
-}
-
-async function saveMemoryCategory(category: MemoryCategory): Promise<void> {
-  const key = `memories/${category.userId}/${category.category}.json`;
-
-  await s3Client.send(new PutObjectCommand({
-    Bucket: MEMORY_BUCKET,
-    Key: key,
-    Body: JSON.stringify(category, null, 2),
-    ContentType: 'application/json',
-    ServerSideEncryption: 'AES256',
-    Metadata: {
-      'user-id': category.userId,
-      'category': category.category,
-      'updated-at': category.lastUpdated,
-    },
+  const facts: MemoryFact[] = rows.map(row => ({
+    id: row.id,
+    key: row.key,
+    value: row.value as any,
+    confidence: (row.confidence || 'high') as 'high' | 'medium' | 'low',
+    learnedFrom: row.learnedFrom || '',
+    learnedAt: row.learnedAt.toISOString(),
+    supersedes: row.supersedes || undefined,
   }));
-}
 
-// -----------------------------------------------------------------------------
-// Cache Functions
-// -----------------------------------------------------------------------------
-
-async function getMemoryCache(userId: string): Promise<MemoryCache | null> {
-  const key = `memories/${userId}/_cache.json`;
-
-  try {
-    const response = await s3Client.send(new GetObjectCommand({
-      Bucket: MEMORY_BUCKET,
-      Key: key,
-    }));
-
-    const body = await response.Body?.transformToString();
-    if (!body) return null;
-
-    return JSON.parse(body) as MemoryCache;
-  } catch (error: any) {
-    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
-      return null;
-    }
-    throw error;
-  }
-}
-
-async function saveMemoryCache(cache: MemoryCache): Promise<void> {
-  const key = `memories/${cache.userId}/_cache.json`;
-
-  await s3Client.send(new PutObjectCommand({
-    Bucket: MEMORY_BUCKET,
-    Key: key,
-    Body: JSON.stringify(cache, null, 2),
-    ContentType: 'application/json',
-    ServerSideEncryption: 'AES256',
-  }));
-}
-
-/**
- * Regenerates the memory cache from all category files
- */
-async function regenerateCache(userId: string): Promise<MemoryCache> {
-  const index = await getMemoryIndex(userId);
-  const now = new Date().toISOString();
-
-  if (!index || index.categories.length === 0) {
-    const emptyCache: MemoryCache = {
-      userId,
-      version: 1,
-      generatedAt: now,
-      factIndex: {},
-      semanticTags: {},
-      availableCategories: [],
-      quickSummary: 'No information recorded yet.',
-      totalFacts: 0,
-    };
-    await saveMemoryCache(emptyCache);
-    return emptyCache;
-  }
-
-  // Load all categories and build the fact index
-  const factIndex: Record<string, FactIndexEntry> = {};
-  const categorySummaries: string[] = [];
-
-  for (const catMeta of index.categories) {
-    const category = await getMemoryCategory(userId, catMeta.name);
-    if (!category) continue;
-
-    for (const fact of category.facts) {
-      factIndex[fact.key] = {
-        category: catMeta.name,
-        confidence: fact.confidence,
-        updatedAt: fact.learnedAt,
-        valueType: getValueType(fact.value),
-        preview: getValuePreview(fact.value),
-      };
-    }
-
-    if (category.summary) {
-      categorySummaries.push(category.summary);
-    }
-  }
-
-  // Build semantic tags based on available facts
-  const semanticTags: Record<string, string[]> = {};
-  const factKeys = Object.keys(factIndex);
-
-  for (const [tag, relatedKeys] of Object.entries(DEFAULT_SEMANTIC_TAGS)) {
-    const matchingKeys = relatedKeys.filter(k => factKeys.includes(k));
-    if (matchingKeys.length > 0) {
-      semanticTags[tag] = matchingKeys;
-    }
-  }
-
-  const cache: MemoryCache = {
-    userId,
-    version: 1,
-    generatedAt: now,
-    factIndex,
-    semanticTags,
-    availableCategories: index.categories.map(c => c.name),
-    quickSummary: categorySummaries.join(' ') || 'Information available across multiple categories.',
-    totalFacts: index.totalFacts,
-  };
-
-  await saveMemoryCache(cache);
-  return cache;
-}
-
-function getValueType(value: unknown): 'string' | 'number' | 'array' | 'object' {
-  if (Array.isArray(value)) return 'array';
-  if (typeof value === 'number') return 'number';
-  if (typeof value === 'object' && value !== null) return 'object';
-  return 'string';
-}
-
-function getValuePreview(value: unknown): string {
-  if (Array.isArray(value)) {
-    if (value.length === 0) return '[]';
-    if (value.length <= 3) return value.join(', ');
-    return `${value.slice(0, 2).join(', ')} (+${value.length - 2} more)`;
-  }
-  if (typeof value === 'object' && value !== null) {
-    const keys = Object.keys(value);
-    return `{${keys.slice(0, 3).join(', ')}${keys.length > 3 ? '...' : ''}}`;
-  }
-  const str = String(value);
-  return str.length > 50 ? str.slice(0, 47) + '...' : str;
-}
-
-/**
- * Checks fact availability against the cache
- */
-function checkFactAvailability(
-  cache: MemoryCache,
-  queries: string[]
-): FactAvailabilityResponse {
-  const availability: FactAvailabilityResponse['availability'] = {};
-  const categoriesToLoad = new Set<string>();
-  const unavailable: string[] = [];
-
-  for (const query of queries) {
-    const normalizedQuery = query.toLowerCase().replace(/\s+/g, '_');
-
-    // Direct fact key match
-    if (cache.factIndex[normalizedQuery]) {
-      const entry = cache.factIndex[normalizedQuery];
-      availability[query] = {
-        available: true,
-        category: entry.category,
-        confidence: entry.confidence,
-        preview: entry.preview,
-      };
-      categoriesToLoad.add(entry.category);
-      continue;
-    }
-
-    // Semantic tag match
-    if (cache.semanticTags[normalizedQuery]) {
-      const relatedKeys = cache.semanticTags[normalizedQuery];
-      // Return the first available fact from the semantic group
-      for (const key of relatedKeys) {
-        if (cache.factIndex[key]) {
-          const entry = cache.factIndex[key];
-          availability[query] = {
-            available: true,
-            category: entry.category,
-            confidence: entry.confidence,
-            preview: `Via ${key}: ${entry.preview}`,
-          };
-          categoriesToLoad.add(entry.category);
-          break;
-        }
-      }
-      if (!availability[query]) {
-        availability[query] = { available: false };
-        unavailable.push(query);
-      }
-      continue;
-    }
-
-    // Partial match on fact keys
-    const partialMatches = Object.keys(cache.factIndex).filter(
-      k => k.includes(normalizedQuery) || normalizedQuery.includes(k)
-    );
-    if (partialMatches.length > 0) {
-      const key = partialMatches[0];
-      const entry = cache.factIndex[key];
-      availability[query] = {
-        available: true,
-        category: entry.category,
-        confidence: entry.confidence,
-        preview: `Via ${key}: ${entry.preview}`,
-      };
-      categoriesToLoad.add(entry.category);
-      continue;
-    }
-
-    // Not found
-    availability[query] = { available: false };
-    unavailable.push(query);
-  }
+  const lastUpdated = rows[0].learnedAt.toISOString();
 
   return {
-    availability,
-    categoriesToLoad: Array.from(categoriesToLoad),
-    unavailable,
+    category,
+    displayName: formatCategoryName(category),
+    userId,
+    lastUpdated,
+    summary: generateCategorySummary({ category, displayName: formatCategoryName(category), userId, lastUpdated, summary: '', facts }),
+    facts,
   };
 }
 
@@ -356,17 +118,6 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
 
     try {
       const index = await getMemoryIndex(userId);
-
-      if (!index) {
-        // Return empty index for new users
-        return {
-          userId,
-          categories: [],
-          totalFacts: 0,
-          lastUpdated: new Date().toISOString(),
-        };
-      }
-
       return index;
     } catch (error: any) {
       app.log.error({ err: error, userId }, 'Failed to get memory index');
@@ -426,7 +177,6 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
         })
       );
 
-      // Build combined summary for prompt injection
       const summaries = Object.entries(results)
         .filter(([_, cat]) => cat !== null)
         .map(([name, cat]) => `### ${cat!.displayName}\n${cat!.summary}`)
@@ -462,93 +212,55 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
     }).parse(req.body);
 
     try {
-      const now = new Date().toISOString();
+      const db = getDatabase();
+      const now = new Date();
 
-      // Get or create category
-      let memoryCategory = await getMemoryCategory(userId, category);
-
-      if (!memoryCategory) {
-        memoryCategory = {
-          category,
-          displayName: body.displayName || formatCategoryName(category),
-          userId,
-          lastUpdated: now,
-          summary: '',
-          facts: [],
-        };
-      }
-
-      // Add new facts (handling supersedes for updates)
       for (const newFact of body.facts) {
-        // If this fact supersedes another, mark old one
-        if (newFact.supersedes) {
-          const oldIndex = memoryCategory.facts.findIndex(f => f.id === newFact.supersedes);
-          if (oldIndex !== -1) {
-            memoryCategory.facts.splice(oldIndex, 1);
-          }
-        }
+        // Check for existing fact with same key
+        const existing = await db.select().from(userMemoryFacts)
+          .where(and(
+            eq(userMemoryFacts.userId, userId),
+            eq(userMemoryFacts.category, category),
+            eq(userMemoryFacts.key, newFact.key)
+          ))
+          .limit(1);
 
-        // Check if fact with same key exists
-        const existingIndex = memoryCategory.facts.findIndex(f => f.key === newFact.key);
-        if (existingIndex !== -1) {
-          // Update existing fact
-          memoryCategory.facts[existingIndex] = newFact;
+        if (existing.length > 0) {
+          // Update existing
+          await db.update(userMemoryFacts)
+            .set({
+              value: newFact.value as any,
+              confidence: newFact.confidence,
+              learnedFrom: newFact.learnedFrom,
+              learnedAt: new Date(newFact.learnedAt),
+              supersedes: newFact.supersedes || existing[0].id,
+            })
+            .where(eq(userMemoryFacts.id, existing[0].id));
         } else {
-          // Add new fact
-          memoryCategory.facts.push(newFact);
+          // Insert new
+          await db.insert(userMemoryFacts).values({
+            id: newFact.id || ulid(),
+            userId,
+            category,
+            key: newFact.key,
+            value: newFact.value as any,
+            confidence: newFact.confidence,
+            learnedFrom: newFact.learnedFrom,
+            learnedAt: new Date(newFact.learnedAt),
+            supersedes: newFact.supersedes,
+          });
         }
       }
 
-      memoryCategory.lastUpdated = now;
-
-      // Regenerate summary if requested
-      if (body.regenerateSummary) {
-        memoryCategory.summary = generateCategorySummary(memoryCategory);
-      }
-
-      // Save category
-      await saveMemoryCategory(memoryCategory);
-
-      // Update index
-      let index = await getMemoryIndex(userId);
-      if (!index) {
-        index = {
-          userId,
-          categories: [],
-          totalFacts: 0,
-          lastUpdated: now,
-        };
-      }
-
-      // Update category in index
-      const catIndex = index.categories.findIndex(c => c.name === category);
-      const catMeta: MemoryCategoryMeta = {
-        name: category,
-        displayName: memoryCategory.displayName,
-        factCount: memoryCategory.facts.length,
-        lastUpdated: now,
-      };
-
-      if (catIndex !== -1) {
-        index.categories[catIndex] = catMeta;
-      } else {
-        index.categories.push(catMeta);
-      }
-
-      index.totalFacts = index.categories.reduce((sum, c) => sum + c.factCount, 0);
-      index.lastUpdated = now;
-
-      await saveMemoryIndex(index);
-
-      // Regenerate cache with new facts
-      const cache = await regenerateCache(userId);
+      // Retrieve updated data
+      const memoryCategory = await getMemoryCategory(userId, category);
+      const index = await getMemoryIndex(userId);
 
       app.log.info({ userId, category, factCount: body.facts.length }, 'Added facts to memory');
 
       return {
         category: memoryCategory,
         index,
-        cache,
       };
     } catch (error: any) {
       app.log.error({ err: error, userId, category }, 'Failed to add facts');
@@ -558,44 +270,7 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
   });
 
   // -------------------------------------------------------------------------
-  // Update category summary
-  // -------------------------------------------------------------------------
-  app.post('/api/memories/:category/summary', async (req, reply) => {
-    if (!req.user) {
-      reply.code(401);
-      return { error: 'Authentication required' };
-    }
-
-    const userId = req.user.userId;
-    const { category } = req.params as { category: string };
-
-    const body = z.object({
-      summary: z.string(),
-    }).parse(req.body);
-
-    try {
-      const memoryCategory = await getMemoryCategory(userId, category);
-
-      if (!memoryCategory) {
-        reply.code(404);
-        return { error: 'Memory category not found' };
-      }
-
-      memoryCategory.summary = body.summary;
-      memoryCategory.lastUpdated = new Date().toISOString();
-
-      await saveMemoryCategory(memoryCategory);
-
-      return { success: true, summary: memoryCategory.summary };
-    } catch (error: any) {
-      app.log.error({ err: error, userId, category }, 'Failed to update summary');
-      reply.code(500);
-      return { error: 'Failed to update summary' };
-    }
-  });
-
-  // -------------------------------------------------------------------------
-  // Delete a memory category
+  // Delete a memory category (all facts in that category)
   // -------------------------------------------------------------------------
   app.delete('/api/memories/:category', async (req, reply) => {
     if (!req.user) {
@@ -607,24 +282,14 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
     const { category } = req.params as { category: string };
 
     try {
-      const key = `memories/${userId}/${category}.json`;
-
-      await s3Client.send(new DeleteObjectCommand({
-        Bucket: MEMORY_BUCKET,
-        Key: key,
-      }));
-
-      // Update index
-      const index = await getMemoryIndex(userId);
-      if (index) {
-        index.categories = index.categories.filter(c => c.name !== category);
-        index.totalFacts = index.categories.reduce((sum, c) => sum + c.factCount, 0);
-        index.lastUpdated = new Date().toISOString();
-        await saveMemoryIndex(index);
-      }
+      const db = getDatabase();
+      await db.delete(userMemoryFacts)
+        .where(and(
+          eq(userMemoryFacts.userId, userId),
+          eq(userMemoryFacts.category, category)
+        ));
 
       app.log.info({ userId, category }, 'Deleted memory category');
-
       return { success: true };
     } catch (error: any) {
       app.log.error({ err: error, userId, category }, 'Failed to delete memory category');
@@ -646,37 +311,13 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
     const { category, factId } = req.params as { category: string; factId: string };
 
     try {
-      const memoryCategory = await getMemoryCategory(userId, category);
-
-      if (!memoryCategory) {
-        reply.code(404);
-        return { error: 'Memory category not found' };
-      }
-
-      const factIndex = memoryCategory.facts.findIndex(f => f.id === factId);
-      if (factIndex === -1) {
-        reply.code(404);
-        return { error: 'Fact not found' };
-      }
-
-      memoryCategory.facts.splice(factIndex, 1);
-      memoryCategory.lastUpdated = new Date().toISOString();
-      memoryCategory.summary = generateCategorySummary(memoryCategory);
-
-      await saveMemoryCategory(memoryCategory);
-
-      // Update index
-      const index = await getMemoryIndex(userId);
-      if (index) {
-        const catIndex = index.categories.findIndex(c => c.name === category);
-        if (catIndex !== -1) {
-          index.categories[catIndex].factCount = memoryCategory.facts.length;
-          index.categories[catIndex].lastUpdated = memoryCategory.lastUpdated;
-        }
-        index.totalFacts = index.categories.reduce((sum, c) => sum + c.factCount, 0);
-        index.lastUpdated = memoryCategory.lastUpdated;
-        await saveMemoryIndex(index);
-      }
+      const db = getDatabase();
+      await db.delete(userMemoryFacts)
+        .where(and(
+          eq(userMemoryFacts.id, factId),
+          eq(userMemoryFacts.userId, userId),
+          eq(userMemoryFacts.category, category)
+        ));
 
       return { success: true };
     } catch (error: any) {
@@ -687,84 +328,8 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
   });
 
   // -------------------------------------------------------------------------
-  // Cache Routes - Fast Fact Lookup
-  // -------------------------------------------------------------------------
-
-  // Get the memory cache (fast lookup index)
-  app.get('/api/memories/cache', async (req, reply) => {
-    if (!req.user) {
-      reply.code(401);
-      return { error: 'Authentication required' };
-    }
-
-    const userId = req.user.userId;
-
-    try {
-      let cache = await getMemoryCache(userId);
-
-      if (!cache) {
-        // Generate cache on first request
-        cache = await regenerateCache(userId);
-      }
-
-      return cache;
-    } catch (error: any) {
-      app.log.error({ err: error, userId }, 'Failed to get memory cache');
-      reply.code(500);
-      return { error: 'Failed to retrieve memory cache' };
-    }
-  });
-
-  // Regenerate the cache (call after bulk updates)
-  app.post('/api/memories/cache/regenerate', async (req, reply) => {
-    if (!req.user) {
-      reply.code(401);
-      return { error: 'Authentication required' };
-    }
-
-    const userId = req.user.userId;
-
-    try {
-      const cache = await regenerateCache(userId);
-      app.log.info({ userId, totalFacts: cache.totalFacts }, 'Regenerated memory cache');
-      return cache;
-    } catch (error: any) {
-      app.log.error({ err: error, userId }, 'Failed to regenerate cache');
-      reply.code(500);
-      return { error: 'Failed to regenerate cache' };
-    }
-  });
-
-  // Check fact availability (pre-flight for questionnaires)
-  app.post('/api/memories/cache/check', async (req, reply) => {
-    if (!req.user) {
-      reply.code(401);
-      return { error: 'Authentication required' };
-    }
-
-    const userId = req.user.userId;
-    const { queries } = z.object({
-      queries: z.array(z.string()),
-    }).parse(req.body);
-
-    try {
-      let cache = await getMemoryCache(userId);
-
-      if (!cache) {
-        cache = await regenerateCache(userId);
-      }
-
-      const availability = checkFactAvailability(cache, queries);
-
-      return availability;
-    } catch (error: any) {
-      app.log.error({ err: error, userId }, 'Failed to check fact availability');
-      reply.code(500);
-      return { error: 'Failed to check fact availability' };
-    }
-  });
-
   // Smart fact lookup - returns facts based on queries
+  // -------------------------------------------------------------------------
   app.post('/api/memories/lookup', async (req, reply) => {
     if (!req.user) {
       reply.code(401);
@@ -778,56 +343,66 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
     }).parse(req.body);
 
     try {
-      let cache = await getMemoryCache(userId);
-      if (!cache) {
-        cache = await regenerateCache(userId);
-      }
+      const db = getDatabase();
 
-      const availability = checkFactAvailability(cache, queries);
+      // Get all user facts
+      const allFacts = await db.select().from(userMemoryFacts)
+        .where(eq(userMemoryFacts.userId, userId));
 
-      // Load the required categories
       const facts: Record<string, unknown> = {};
-      const loadedCategories: Record<string, MemoryCategory> = {};
+      const availability: Record<string, { available: boolean; category?: string; confidence?: string; preview?: string }> = {};
+      const unavailable: string[] = [];
+      const categoriesToLoad = new Set<string>();
 
-      for (const categoryName of availability.categoriesToLoad) {
-        const category = await getMemoryCategory(userId, categoryName);
-        if (category) {
-          loadedCategories[categoryName] = category;
+      for (const query of queries) {
+        const normalizedQuery = query.toLowerCase().replace(/\s+/g, '_');
+
+        // Find matching fact by key
+        const match = allFacts.find(f =>
+          f.key === normalizedQuery ||
+          f.key.includes(normalizedQuery) ||
+          normalizedQuery.includes(f.key)
+        );
+
+        if (match) {
+          facts[query] = match.value;
+          availability[query] = {
+            available: true,
+            category: match.category,
+            confidence: match.confidence || 'high',
+            preview: typeof match.value === 'string' ? match.value.slice(0, 50) : JSON.stringify(match.value).slice(0, 50),
+          };
+          categoriesToLoad.add(match.category);
+        } else {
+          availability[query] = { available: false };
+          unavailable.push(query);
         }
       }
 
-      // Extract the relevant facts
-      for (const [query, info] of Object.entries(availability.availability)) {
-        if (info.available && info.category) {
-          const category = loadedCategories[info.category];
-          if (category) {
-            // Find the matching fact
-            const normalizedQuery = query.toLowerCase().replace(/\s+/g, '_');
-            const fact = category.facts.find(f =>
-              f.key === normalizedQuery ||
-              f.key.includes(normalizedQuery) ||
-              normalizedQuery.includes(f.key)
-            );
-            if (fact) {
-              facts[query] = fact.value;
-            }
+      let contextString = '';
+      if (includeContext && categoriesToLoad.size > 0) {
+        const categoryFacts = new Map<string, typeof allFacts>();
+        for (const fact of allFacts) {
+          if (categoriesToLoad.has(fact.category)) {
+            if (!categoryFacts.has(fact.category)) categoryFacts.set(fact.category, []);
+            categoryFacts.get(fact.category)!.push(fact);
           }
         }
-      }
 
-      // Build context string if requested
-      let contextString = '';
-      if (includeContext) {
-        const summaries = Object.values(loadedCategories)
-          .map(c => `### ${c.displayName}\n${c.summary}`)
-          .join('\n\n');
-        contextString = summaries || 'No relevant information found.';
+        const summaries = Array.from(categoryFacts.entries()).map(([cat, facts]) => {
+          const factStrings = facts.map(f => {
+            const value = typeof f.value === 'string' ? f.value : JSON.stringify(f.value);
+            return `${formatFactKey(f.key)}: ${value}`;
+          });
+          return `### ${formatCategoryName(cat)}\n${factStrings.join('. ')}.`;
+        });
+        contextString = summaries.join('\n\n') || 'No relevant information found.';
       }
 
       return {
         facts,
-        availability: availability.availability,
-        unavailable: availability.unavailable,
+        availability,
+        unavailable,
         context: includeContext ? contextString : undefined,
       };
     } catch (error: any) {
@@ -841,20 +416,22 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
   // Legacy routes for backward compatibility
   // -------------------------------------------------------------------------
 
-  // Get memory for an agent (legacy - maps to user's memories)
   app.get('/api/memories/:userId/:agentId', async (req, reply) => {
     const { userId, agentId } = req.params as { userId: string; agentId: string };
-    const requestUserId = req.user?.userId || 'demo-user';
+    const requestUserId = req.user?.userId;
 
-    // Verify user can only access their own memories
-    if (userId !== requestUserId && requestUserId !== 'demo-user') {
+    if (!requestUserId) {
+      reply.code(401);
+      return { error: 'Authentication required' };
+    }
+
+    if (userId !== requestUserId) {
       reply.code(403);
       return { error: 'Access denied' };
     }
 
-    // Return the full memory index for backward compatibility
     const index = await getMemoryIndex(userId);
-    return index || { userId, categories: [], totalFacts: 0, lastUpdated: new Date().toISOString() };
+    return index;
   });
 }
 
@@ -863,16 +440,24 @@ export function registerMemoryRoutes(app: FastifyInstance): void {
 // -----------------------------------------------------------------------------
 
 function formatCategoryName(category: string): string {
-  return category
+  const names: Record<string, string> = {
+    identity: 'Personal Info',
+    dietary: 'Dietary Preferences',
+    health: 'Health Information',
+    preferences: 'General Preferences',
+    wishlist: 'Wishlist',
+    financial: 'Financial Information',
+    schedule: 'Scheduling Preferences',
+    family: 'Family Information',
+    work: 'Work & Career',
+    general: 'General Information',
+  };
+  return names[category] || category
     .split(/[-_]/)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
 
-/**
- * Generates a simple summary from facts.
- * In production, this would use an LLM for better natural language.
- */
 function generateCategorySummary(category: MemoryCategory): string {
   if (category.facts.length === 0) {
     return `No information recorded for ${category.displayName}.`;

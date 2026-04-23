@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACP - Conversation Audit Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #14141f;
+            --bg-tertiary: #1e1e2e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-yellow: #eab308;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --border-color: #2e2e3e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .api-config {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            width: 300px;
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-secondary);
+        }
+
+        button {
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        .conversations-list {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .conversations-list h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        .conversation-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+
+        .conversation-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .conversation-item.active {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+        }
+
+        .conversation-item .host {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .conversation-item .meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .audit-detail {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .audit-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .audit-stats {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .event-timeline {
+            position: relative;
+        }
+
+        .event-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .event-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 32px;
+            bottom: -16px;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .event-item:last-child::before {
+            display: none;
+        }
+
+        .event-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .event-icon.user { background: var(--accent-blue); }
+        .event-icon.host { background: var(--accent-green); }
+        .event-icon.agent { background: var(--accent-purple); }
+        .event-icon.bidding { background: var(--accent-yellow); }
+        .event-icon.system { background: var(--bg-tertiary); border: 1px solid var(--border-color); }
+
+        .event-content {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .event-type {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+        }
+
+        .event-type.user_message { color: var(--accent-blue); }
+        .event-type.host_response { color: var(--accent-green); }
+        .event-type.agent_response { color: var(--accent-purple); }
+        .event-type.bidding_round { color: var(--accent-yellow); }
+        .event-type.conversation_start, .event-type.conversation_end { color: var(--text-secondary); }
+
+        .event-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .event-body {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .event-body .message {
+            background: var(--bg-secondary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .bidding-results {
+            margin-top: 8px;
+        }
+
+        .bidding-result {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .bidding-result .agent-emoji {
+            font-size: 20px;
+        }
+
+        .bidding-result .agent-name {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .bidding-result .scores {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .bidding-result .score {
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+        }
+
+        .bidding-result .score.pass {
+            color: var(--accent-green);
+        }
+
+        .bidding-result .score.fail {
+            color: var(--accent-red);
+        }
+
+        .bidding-result .final-score {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .conversations-list {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <img src="macp-icon.png" alt="MACP" class="logo">
+                Conversation Audit Dashboard
+            </h1>
+            <div class="api-config">
+                <input type="text" id="apiUrl" placeholder="API URL (e.g., https://api.example.com)" value="">
+                <input type="password" id="apiKey" placeholder="Audit API Key" value="macp-audit-2026" style="width: 150px;">
+                <button onclick="loadConversations()">Load</button>
+            </div>
+        </header>
+
+        <div class="layout">
+            <div class="conversations-list">
+                <h2>Recent Conversations</h2>
+                <div id="conversationsList">
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p>Enter your API URL and click Load</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audit-detail">
+                <div id="auditDetail">
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <p>Select a conversation to view the audit trail</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiUrl = '';
+        let selectedConversationId = null;
+
+        // Try to load saved API URL
+        const savedUrl = localStorage.getItem('macp-audit-api-url');
+        if (savedUrl) {
+            document.getElementById('apiUrl').value = savedUrl;
+            apiUrl = savedUrl;
+            loadConversations();
+        }
+
+        async function loadConversations() {
+            apiUrl = document.getElementById('apiUrl').value.trim();
+            const auditKey = document.getElementById('apiKey').value.trim();
+            if (!apiUrl) {
+                alert('Please enter an API URL');
+                return;
+            }
+
+            // Save for next time
+            localStorage.setItem('macp-audit-api-url', apiUrl);
+
+            const list = document.getElementById('conversationsList');
+            list.innerHTML = '<div class="loading">Loading conversations...</div>';
+
+            try {
+                const response = await fetch(`${apiUrl}/audit/conversations?limit=50`, {
+                    headers: {
+                        'x-audit-key': auditKey
+                    }
+                });
+                const data = await response.json();
+
+                if (!data.success || !data.conversations || data.conversations.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><p>No conversations found</p></div>';
+                    return;
+                }
+
+                list.innerHTML = data.conversations.map(conv => `
+                    <div class="conversation-item ${conv.conversationId === selectedConversationId ? 'active' : ''}"
+                         onclick="loadConversation('${conv.conversationId}')">
+                        <div class="host">${conv.hostAgentName || 'Unknown Host'}</div>
+                        <div class="meta">
+                            ${formatDate(conv.startedAt)} &bull; ${conv.totalTurns} turns
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load conversations:', error);
+                list.innerHTML = `<div class="empty-state"><p>Error: ${error.message}</p></div>`;
+            }
+        }
+
+        async function loadConversation(conversationId) {
+            selectedConversationId = conversationId;
+            const auditKey = document.getElementById('apiKey').value.trim();
+
+            // Update active state in list
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.conversation-item').classList.add('active');
+
+            const detail = document.getElementById('auditDetail');
+            detail.innerHTML = '<div class="loading">Loading audit details...</div>';
+
+            try {
+                const response = await fetch(`${apiUrl}/audit/conversations/${conversationId}`, {
+                    headers: {
+                        'x-audit-key': auditKey
+                    }
+                });
+                const data = await response.json();
+
+                if (!data.success || !data.audit) {
+                    detail.innerHTML = '<div class="empty-state"><p>Audit not found</p></div>';
+                    return;
+                }
+
+                renderAuditDetail(data.audit);
+            } catch (error) {
+                console.error('Failed to load conversation:', error);
+                detail.innerHTML = `<div class="empty-state"><p>Error: ${error.message}</p></div>`;
+            }
+        }
+
+        function renderAuditDetail(audit) {
+            const detail = document.getElementById('auditDetail');
+
+            const duration = audit.endedAt
+                ? Math.round((new Date(audit.endedAt) - new Date(audit.startedAt)) / 1000 / 60)
+                : null;
+
+            detail.innerHTML = `
+                <div class="audit-header">
+                    <div>
+                        <h2>${audit.hostAgentName || 'Conversation'}</h2>
+                        <div class="audit-stats">
+                            <div class="stat">
+                                <span>Started:</span>
+                                <span class="stat-value">${formatDate(audit.startedAt)}</span>
+                            </div>
+                            ${duration ? `
+                            <div class="stat">
+                                <span>Duration:</span>
+                                <span class="stat-value">${duration} min</span>
+                            </div>
+                            ` : ''}
+                            <div class="stat">
+                                <span>Turns:</span>
+                                <span class="stat-value">${audit.totalTurns}</span>
+                            </div>
+                            <div class="stat">
+                                <span>User Agents:</span>
+                                <span class="stat-value">${audit.userAgentNames?.join(', ') || 'None'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="event-timeline">
+                    ${audit.events.map(event => renderEvent(event)).join('')}
+                </div>
+            `;
+        }
+
+        function renderEvent(event) {
+            const iconClass = getIconClass(event.type);
+            const emoji = getEventEmoji(event);
+
+            return `
+                <div class="event-item">
+                    <div class="event-icon ${iconClass}">${emoji}</div>
+                    <div class="event-content">
+                        <div class="event-header">
+                            <span class="event-type ${event.type}">${formatEventType(event.type)}</span>
+                            <span class="event-time">${formatTime(event.timestamp)}</span>
+                        </div>
+                        <div class="event-body">
+                            ${renderEventBody(event)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getIconClass(type) {
+            switch (type) {
+                case 'user_message': return 'user';
+                case 'host_response': return 'host';
+                case 'agent_response': return 'agent';
+                case 'bidding_round': return 'bidding';
+                default: return 'system';
+            }
+        }
+
+        function getEventEmoji(event) {
+            switch (event.type) {
+                case 'user_message': return '👤';
+                case 'host_response': return event.data.agentEmoji || '🏠';
+                case 'agent_response': return event.data.agentEmoji || '🤖';
+                case 'bidding_round': return '📊';
+                case 'conversation_start': return '🚀';
+                case 'conversation_end': return '🏁';
+                case 'task_match': return '✅';
+                case 'memory_saved': return '💾';
+                case 'orchestration_decision': return '🎯';
+                default: return '📌';
+            }
+        }
+
+        function formatEventType(type) {
+            return type.replace(/_/g, ' ');
+        }
+
+        function renderEventBody(event) {
+            switch (event.type) {
+                case 'user_message':
+                    return `<div class="message">${escapeHtml(event.data.message || '')}</div>`;
+
+                case 'host_response':
+                    return `<div class="message">${escapeHtml(event.data.hostResponse || '')}</div>`;
+
+                case 'agent_response':
+                    return `
+                        <strong>${event.data.agentName || 'Agent'}</strong>
+                        <div class="message">${escapeHtml(event.data.response || '')}</div>
+                    `;
+
+                case 'bidding_round':
+                    if (!event.data.biddingResults) return 'No bidding data';
+                    return `
+                        <div class="bidding-results">
+                            ${event.data.biddingResults.map(result => `
+                                <div class="bidding-result">
+                                    <span class="agent-emoji">${result.agentEmoji || '🤖'}</span>
+                                    <span class="agent-name">${result.agentName}</span>
+                                    <div class="scores">
+                                        <span class="score">R: ${(result.relevanceScore || 0).toFixed(2)}</span>
+                                        <span class="score">C: ${(result.confidenceScore || 0).toFixed(2)}</span>
+                                        <span class="score">N: ${(result.noveltyScore || 0).toFixed(2)}</span>
+                                        <span class="score">E: ${(result.expertiseScore || 0).toFixed(2)}</span>
+                                        <span class="score final-score">Final: ${(result.finalScore || 0).toFixed(2)}</span>
+                                        <span class="score ${result.shouldParticipate ? 'pass' : 'fail'}">
+                                            ${result.shouldParticipate ? 'PARTICIPATE' : 'PASS'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${event.data.participatingAgents?.length > 0 ? `
+                            <p style="margin-top: 8px; color: var(--accent-green);">
+                                Participating: ${event.data.participatingAgents.join(', ')}
+                            </p>
+                        ` : ''}
+                    `;
+
+                case 'orchestration_decision':
+                    return `
+                        <strong>${event.data.decision || ''}</strong>
+                        <div class="message">${escapeHtml(event.data.reason || '')}</div>
+                    `;
+
+                case 'task_match':
+                    return `
+                        <strong>Task matched with ${event.data.matchedHostAgent}</strong>
+                        <div class="message">${escapeHtml(event.data.taskDescription || '')}</div>
+                    `;
+
+                case 'memory_saved':
+                    return `
+                        <strong>Memory saved (${event.data.metadata?.category || 'unknown'})</strong>
+                        <div class="message">${escapeHtml(event.data.metadata?.memoryContent || '')}</div>
+                    `;
+
+                case 'conversation_start':
+                    return `
+                        <p>Host: ${event.data.metadata?.hostAgentName || 'Unknown'}</p>
+                        ${event.data.metadata?.userAgentNames?.length > 0 ? `
+                            <p>User Agents: ${event.data.metadata.userAgentNames.join(', ')}</p>
+                        ` : ''}
+                    `;
+
+                case 'conversation_end':
+                    return '<p>Conversation ended</p>';
+
+                default:
+                    return `<pre>${JSON.stringify(event.data, null, 2)}</pre>`;
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Unknown';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

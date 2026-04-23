@@ -5,6 +5,7 @@ import { AuthStack } from '../lib/stacks/auth-stack';
 import { DatabaseStack } from '../lib/stacks/database-stack';
 import { ApiStack } from '../lib/stacks/api-stack';
 import { BuildStack } from '../lib/stacks/build-stack';
+import { WebStack } from '../lib/stacks/web-stack';
 
 const app = new cdk.App();
 
@@ -40,13 +41,13 @@ const databaseStack = new DatabaseStack(app, `${prefix}-database`, {
   prefix,
 });
 
-// Build Stack (ECR + CodeBuild for container builds)
+// Build Stack (S3 buckets for memory and archives, DynamoDB for metadata)
 const buildStack = new BuildStack(app, `${prefix}-build`, {
   env,
   prefix,
 });
 
-// API Stack (ECS Fargate + API Gateway + WebSocket)
+// API Stack (Lambda + API Gateway)
 const apiStack = new ApiStack(app, `${prefix}-api`, {
   env,
   prefix,
@@ -55,12 +56,18 @@ const apiStack = new ApiStack(app, `${prefix}-api`, {
   database: databaseStack.database,
   redis: databaseStack.redis,
   vpc: databaseStack.vpc,
-  repository: buildStack.repository,
   memoryBucket: buildStack.memoryBucket,
   archiveBucket: buildStack.archiveBucket,
   archiveKey: buildStack.archiveKey,
   archiveTable: buildStack.archiveTable,
   domainName: config.domainName,
+});
+
+// Web Stack (CloudFront + S3 for macp.io)
+const webStack = new WebStack(app, `${prefix}-web`, {
+  env,
+  domainName: 'macp.io',
+  stage: config.environment,
 });
 
 // Add dependencies

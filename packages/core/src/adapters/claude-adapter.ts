@@ -43,29 +43,41 @@ export class ClaudeAdapter extends AgentAdapter {
   }
 
   async generate(request: GenerateRequest): Promise<GenerateResponse> {
-    const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
+    const url = `${this.config.baseUrl}/v1/messages`;
+    const requestBody = {
+      model: this.config.model,
+      max_tokens: request.maxTokens ?? 4096,
+      system: request.systemPrompt,
+      messages: request.messages.map((m) => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      })),
+      temperature: request.temperature,
+    };
+
+    // Debug logging
+    console.log(`[ClaudeAdapter] Request to: ${url}`);
+    console.log(`[ClaudeAdapter] Model: ${this.config.model}`);
+    console.log(`[ClaudeAdapter] API Key prefix: ${this.config.apiKey?.substring(0, 12)}...`);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'x-api-key': this.config.apiKey,
         'anthropic-version': '2023-06-01',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        model: this.config.model,
-        max_tokens: request.maxTokens ?? 4096,
-        system: request.systemPrompt,
-        messages: request.messages.map((m) => ({
-          role: m.role === 'user' ? 'user' : 'assistant',
-          content: m.content,
-        })),
-        temperature: request.temperature,
-      }),
+      body: JSON.stringify(requestBody),
       signal: AbortSignal.timeout(this.config.timeoutMs),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Claude API error: ${response.status} - ${error}`);
+      const errorText = await response.text();
+      console.error(`[ClaudeAdapter] ERROR ${response.status}`);
+      console.error(`[ClaudeAdapter] URL: ${url}`);
+      console.error(`[ClaudeAdapter] Model: ${this.config.model}`);
+      console.error(`[ClaudeAdapter] Response: ${errorText}`);
+      throw new Error(`Claude API error: ${response.status} - Model: ${this.config.model} - ${errorText}`);
     }
 
     const data = await response.json() as ClaudeResponse;
@@ -116,7 +128,7 @@ export class ClaudeAdapter extends AgentAdapter {
 
 export function createClaudeAdapter(
   apiKey: string,
-  model: string = 'claude-3-5-sonnet-20241022',
+  model: string = 'claude-sonnet-4-5-20250929',
   timeoutMs: number = 30000
 ): ClaudeAdapter {
   return new ClaudeAdapter({

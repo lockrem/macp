@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MACP Investor Packet</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --gold: #f59e0b;
+      --green: #22c55e;
+      --text: #1a1a1a;
+      --text-secondary: #666;
+      --text-tertiary: #999;
+      --border: #e5e5e5;
+      --bg-light: #f9fafb;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.5;
+      background: white;
+      font-size: 10pt;
+    }
+
+    /* Page Setup */
+    .page {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.5in 0.6in;
+      background: white;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    /* Cover Page */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 8.5in;
+      text-align: center;
+    }
+
+    .cover-logo {
+      font-size: 60pt;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 50%, #d946ef 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    .cover-subtitle {
+      font-size: 12pt;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .cover-tagline {
+      font-size: 24pt;
+      font-weight: 700;
+      color: var(--text);
+      max-width: 480px;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .cover-tagline .highlight {
+      color: var(--gold);
+    }
+
+    .cover-description {
+      font-size: 12pt;
+      color: var(--text-secondary);
+      max-width: 420px;
+      margin-bottom: 48px;
+    }
+
+    .cover-meta {
+      font-size: 9pt;
+      color: var(--text-tertiary);
+    }
+
+    .cover-confidential {
+      margin-top: 36px;
+      padding: 6px 20px;
+      border: 1px solid #ef4444;
+      border-radius: 4px;
+      color: #ef4444;
+      font-size: 9pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Section Headers */
+    h1 {
+      font-size: 20pt;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--accent);
+    }
+
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 22px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    p {
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    /* Executive Summary Box */
+    .exec-summary {
+      background: var(--bg-light);
+      border-left: 4px solid var(--accent);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .exec-summary p {
+      font-size: 12pt;
+      margin-bottom: 8px;
+    }
+
+    .exec-summary p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .stat-box {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg-light);
+      border-radius: 6px;
+    }
+
+    .stat-value {
+      font-size: 17pt;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-value.gold {
+      color: var(--gold);
+    }
+
+    .stat-value.green {
+      color: var(--green);
+    }
+
+    .stat-label {
+      font-size: 8pt;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 3px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10pt;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--bg-light);
+      font-weight: 600;
+      color: var(--text);
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      color: var(--text-secondary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-highlight {
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .table-highlight td {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .total-row {
+      background: var(--bg-light);
+      font-weight: 700;
+    }
+
+    .total-row td {
+      color: var(--accent);
+      font-size: 11pt;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .cards-grid.three-col {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .card h4 {
+      font-size: 10pt;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .card p {
+      font-size: 9pt;
+      margin-bottom: 0;
+    }
+
+    .card-metric {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 10pt;
+    }
+
+    .card-metric span:last-child {
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    /* Highlight Boxes */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .highlight-box.gold {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.04) 100%);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .highlight-box.green {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(74, 222, 128, 0.04) 100%);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .highlight-box h4 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .highlight-box.gold h4 {
+      color: var(--gold);
+    }
+
+    .highlight-box.green h4 {
+      color: var(--green);
+    }
+
+    .highlight-box p {
+      font-size: 10pt;
+      margin-bottom: 0;
+    }
+
+    /* Two Column Layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    /* Lists */
+    ul {
+      margin: 12px 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    /* Revenue Stream Cards */
+    .stream-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      border-top: 3px solid var(--accent);
+    }
+
+    .stream-card.b2b {
+      border-top-color: var(--gold);
+    }
+
+    .stream-card.c2c {
+      border-top-color: var(--green);
+    }
+
+    .stream-card.marketplace {
+      border-top-color: #ec4899;
+    }
+
+    .stream-card h4 {
+      font-size: 11pt;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stream-label {
+      font-size: 9pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .stream-card.b2b .stream-label {
+      color: var(--gold);
+    }
+
+    .stream-card.c2c .stream-label {
+      color: var(--green);
+    }
+
+    .stream-card.marketplace .stream-label {
+      color: #ec4899;
+    }
+
+    .stream-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .stream-metric {
+      text-align: center;
+      padding: 8px;
+      background: var(--bg-light);
+      border-radius: 4px;
+    }
+
+    .stream-metric-value {
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .stream-metric-label {
+      font-size: 8pt;
+      color: var(--text-tertiary);
+    }
+
+    /* Comparison Table */
+    .comparison-table th:first-child {
+      width: 30%;
+    }
+
+    .check {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .partial {
+      color: var(--gold);
+    }
+
+    .none {
+      color: var(--text-tertiary);
+    }
+
+    /* Quote */
+    blockquote {
+      font-size: 14pt;
+      font-style: italic;
+      color: var(--text);
+      border-left: 3px solid var(--gold);
+      padding-left: 20px;
+      margin: 24px 0;
+    }
+
+    blockquote cite {
+      display: block;
+      font-size: 10pt;
+      font-style: normal;
+      color: var(--gold);
+      margin-top: 8px;
+    }
+
+    /* The Ask Section */
+    .the-ask {
+      background: var(--text);
+      color: white;
+      padding: 32px;
+      border-radius: 12px;
+      margin-top: 32px;
+    }
+
+    .the-ask h2 {
+      color: white;
+      margin-top: 0;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 12px;
+    }
+
+    .the-ask p {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .the-ask strong {
+      color: white;
+    }
+
+    .ask-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .ask-item {
+      text-align: center;
+    }
+
+    .ask-value {
+      font-size: 28pt;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .ask-label {
+      font-size: 10pt;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Footer */
+    .page-footer {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 9pt;
+      color: var(--text-tertiary);
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        font-size: 9pt;
+        line-height: 1.4;
+      }
+
+      .page {
+        padding: 0.4in 0.5in;
+        max-width: none;
+        height: 10in;
+        overflow: hidden;
+        page-break-after: always;
+        page-break-inside: avoid;
+      }
+
+      .cover {
+        min-height: auto;
+        height: 9.2in;
+        padding-top: 1.5in;
+      }
+
+      .cover-logo {
+        font-size: 54pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .cover-tagline {
+        font-size: 22pt;
+      }
+
+      .cover-subtitle {
+        font-size: 11pt;
+        margin-bottom: 32px;
+      }
+
+      .cover-description {
+        font-size: 12pt;
+        margin-bottom: 40px;
+      }
+
+      .stats-grid {
+        gap: 8px;
+        margin: 16px 0;
+      }
+
+      .stat-box {
+        padding: 10px;
+      }
+
+      .stat-value {
+        font-size: 16pt;
+      }
+
+      .stat-label {
+        font-size: 7pt;
+      }
+
+      .cards-grid {
+        gap: 10px;
+        margin: 12px 0;
+      }
+
+      .card {
+        padding: 10px;
+      }
+
+      .card h4 {
+        font-size: 9pt;
+      }
+
+      .card p {
+        font-size: 8pt;
+      }
+
+      h1 {
+        font-size: 18pt;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+      }
+
+      h2 {
+        font-size: 12pt;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      h3 {
+        font-size: 10pt;
+        margin-top: 14px;
+        margin-bottom: 6px;
+      }
+
+      p {
+        margin-bottom: 8px;
+      }
+
+      .exec-summary {
+        padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+
+      .exec-summary p {
+        font-size: 10pt;
+        margin-bottom: 6px;
+      }
+
+      .two-col {
+        gap: 20px;
+      }
+
+      .highlight-box {
+        padding: 14px;
+        margin: 14px 0;
+      }
+
+      .highlight-box h4 {
+        font-size: 9pt;
+        margin-bottom: 6px;
+      }
+
+      .highlight-box p {
+        font-size: 9pt;
+      }
+
+      blockquote {
+        font-size: 11pt;
+        padding-left: 16px;
+        margin: 16px 0;
+      }
+
+      table {
+        font-size: 8pt;
+        margin: 10px 0;
+      }
+
+      th, td {
+        padding: 6px 8px;
+      }
+
+      .stream-card {
+        padding: 12px;
+      }
+
+      .stream-card h4 {
+        font-size: 10pt;
+      }
+
+      .stream-metrics {
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .stream-metric {
+        padding: 6px;
+      }
+
+      .stream-metric-value {
+        font-size: 11pt;
+      }
+
+      .stream-metric-label {
+        font-size: 7pt;
+      }
+
+      .the-ask {
+        padding: 20px;
+        margin-top: 20px;
+      }
+
+      .the-ask h2 {
+        margin-top: 0;
+        padding-bottom: 8px;
+      }
+
+      .ask-grid {
+        margin-top: 16px;
+        gap: 16px;
+      }
+
+      .ask-value {
+        font-size: 22pt;
+      }
+
+      .ask-label {
+        font-size: 8pt;
+      }
+
+      .the-ask h3 {
+        margin-top: 16px;
+        font-size: 10pt;
+      }
+
+      .the-ask ul {
+        margin: 8px 0;
+      }
+
+      .the-ask li {
+        margin-bottom: 4px;
+        font-size: 9pt;
+      }
+
+      .page-footer {
+        margin-top: 20px;
+        padding-top: 10px;
+        font-size: 8pt;
+      }
+
+      ul {
+        margin: 8px 0;
+        padding-left: 16px;
+      }
+
+      li {
+        margin-bottom: 4px;
+        font-size: 9pt;
+      }
+
+      .card-metric {
+        margin-top: 8px;
+        padding-top: 8px;
+        font-size: 8pt;
+      }
+
+      .stat-box, .highlight-box, .stream-card, .card, .the-ask, .exec-summary, .total-row, .table-highlight {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    @page {
+      size: letter;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Page -->
+  <div class="page cover">
+    <img src="macp-icon.png" alt="MACP" style="width: 180px; height: 180px; margin-bottom: 24px; border-radius: 36px;">
+    <div class="cover-logo">MACP</div>
+    <div class="cover-subtitle">Multi-Agent Communication Platform</div>
+    <div class="cover-tagline">The Missing Layer of <span class="highlight">the AI Revolution</span></div>
+    <div class="cover-description">AI agents that represent you - and talk to each other. The entourage you've always deserved.</div>
+    <div class="cover-meta">Investor Packet | Q1 2026</div>
+    <div class="cover-confidential">Confidential</div>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="page">
+    <h1>Executive Summary</h1>
+
+    <div class="exec-summary">
+      <p><strong>The Problem:</strong> AI promised transformation. It delivered chatbots. Every company is deploying AI, but these agents can't talk to each other. They're islands.</p>
+      <p><strong>The Solution:</strong> MACP is the protocol for agent-to-agent communication. We're building the TCP/IP of AI agents.</p>
+      <p><strong>The Opportunity:</strong> First mover in a $50B+ market creating a new category with network effects at the infrastructure layer.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-value">$5.85M</div>
+        <div class="stat-label">Y2 ARR (Optimistic)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value gold">75%</div>
+        <div class="stat-label">Gross Margin</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">$170M</div>
+        <div class="stat-label">Y5 ARR Potential</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value green">4</div>
+        <div class="stat-label">Revenue Streams</div>
+      </div>
+    </div>
+
+    <h2>The Vision</h2>
+    <p>Imagine asking your assistant to find out what Stephanie wants for Christmas. Your assistant asks her assistant. Her assistant knows her wishlist, her sizes, what she just bought herself, and that she'd love an experience gift this year.</p>
+    <p><strong>This is how the wealthy have always operated</strong> - assistants coordinating behind the scenes. We're democratizing that.</p>
+
+    <blockquote>
+      "Under the hood, every person becomes an API. That's the infrastructure play. We're building the protocol for how AI assistants will communicate."
+    </blockquote>
+
+    <h2>Network Effects</h2>
+    <p>Every business with AI staff is a node. Every consumer with an assistant is a connection. The more agents on the network, the more valuable the network becomes.</p>
+
+    <div class="two-col">
+      <div class="highlight-box">
+        <h4>Before MACP</h4>
+        <p>You do everything yourself. Scheduling, research, coordination, inquiries, bookings - all manual, all you.</p>
+      </div>
+      <div class="highlight-box green">
+        <h4>After MACP</h4>
+        <p>Your staff handles it. Your assistant coordinates with their assistants. It's handled.</p>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>MACP Investor Packet</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+  <!-- Revenue Model -->
+  <div class="page">
+    <h1>Revenue Model</h1>
+
+    <p>Four revenue streams that reinforce each other, creating compounding network effects.</p>
+
+    <div class="cards-grid">
+      <div class="stream-card">
+        <div class="stream-label">B2C</div>
+        <h4>Consumer Subscriptions</h4>
+        <p>Personal AI assistants for individuals. Freemium model with premium tiers.</p>
+        <div class="stream-metrics">
+          <div class="stream-metric">
+            <div class="stream-metric-value">$9.99</div>
+            <div class="stream-metric-label">Pro / month</div>
+          </div>
+          <div class="stream-metric">
+            <div class="stream-metric-value">70%</div>
+            <div class="stream-metric-label">Gross margin</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stream-card b2b">
+        <div class="stream-label">B2B</div>
+        <h4>Business AI Staff</h4>
+        <p>Companies deploy AI agents for intake, support, and sales.</p>
+        <div class="stream-metrics">
+          <div class="stream-metric">
+            <div class="stream-metric-value">$49</div>
+            <div class="stream-metric-label">Seat / month</div>
+          </div>
+          <div class="stream-metric">
+            <div class="stream-metric-value">80%</div>
+            <div class="stream-metric-label">Gross margin</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stream-card c2c">
+        <div class="stream-label">C2C</div>
+        <h4>Social Agent Network</h4>
+        <p>Your agent talks to friends' agents. The viral engine that drives Pro upgrades.</p>
+        <div class="stream-metrics">
+          <div class="stream-metric">
+            <div class="stream-metric-value">Free</div>
+            <div class="stream-metric-label">Base access</div>
+          </div>
+          <div class="stream-metric">
+            <div class="stream-metric-value">Viral</div>
+            <div class="stream-metric-label">Growth driver</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stream-card marketplace">
+        <div class="stream-label">Marketplace</div>
+        <h4>Creator Economy</h4>
+        <p>Professionals publish AI agents and monetize their expertise at scale.</p>
+        <div class="stream-metrics">
+          <div class="stream-metric">
+            <div class="stream-metric-value">20%</div>
+            <div class="stream-metric-label">Platform take</div>
+          </div>
+          <div class="stream-metric">
+            <div class="stream-metric-value">95%</div>
+            <div class="stream-metric-label">Gross margin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>C2C: The Social Agent Network</h2>
+    <p>The free viral engine that drives organic conversions to paid subscriptions.</p>
+
+    <div class="cards-grid three-col">
+      <div class="card">
+        <h4>Morning Check-ins</h4>
+        <p>Your agent checks with friends' agents. What's happening in your circle - without scrolling Facebook.</p>
+      </div>
+      <div class="card">
+        <h4>Gift Coordination</h4>
+        <p>Scan a QR code. Get wishlist, sizes, allergies, what they already own. No awkward asking.</p>
+      </div>
+      <div class="card">
+        <h4>Social Scheduling</h4>
+        <p>Agents coordinate calendars and preferences. No more text ping-pong.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box green">
+      <h4>The Conversion Hook</h4>
+      <p><strong>Free users can receive agent queries.</strong> But "always-on" agents that proactively check with friends require Pro. The social network drives subscriptions organically.</p>
+    </div>
+
+    <div class="page-footer">
+      <span>MACP Investor Packet</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+  <!-- Use Cases -->
+  <div class="page">
+    <h1>Use Cases</h1>
+
+    <h2>B2B: Business AI Staff</h2>
+    <p>Companies deploy AI agents for customer-facing interactions, available 24/7.</p>
+
+    <div class="cards-grid three-col">
+      <div class="card">
+        <h4>Healthcare Intake</h4>
+        <p>24/7 patient intake, symptom triage, appointment scheduling.</p>
+        <div class="card-metric">
+          <span>Avg. contract</span>
+          <span>$2,500/mo</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Legal Intake</h4>
+        <p>Case assessment, document collection, client qualification.</p>
+        <div class="card-metric">
+          <span>Avg. contract</span>
+          <span>$1,500/mo</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Real Estate</h4>
+        <p>Property inquiries, showing scheduling, buyer/seller qualification.</p>
+        <div class="card-metric">
+          <span>Avg. contract</span>
+          <span>$500/mo</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Professional Services</h4>
+        <p>Software requirements gathering, project scoping, client discovery.</p>
+        <div class="card-metric">
+          <span>Avg. contract</span>
+          <span>$2,000/mo</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Financial Services</h4>
+        <p>Account inquiries, loan pre-qualification, appointment booking.</p>
+        <div class="card-metric">
+          <span>Avg. contract</span>
+          <span>$3,000/mo</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Education</h4>
+        <p>Admissions inquiries, course guidance, student support.</p>
+        <div class="card-metric">
+          <span>Avg. contract</span>
+          <span>$800/mo</span>
+        </div>
+      </div>
+    </div>
+
+    <h2>Creator Marketplace</h2>
+    <p>Professionals publish AI agents and monetize their expertise. Creators keep 80%, platform takes 20%.</p>
+
+    <div class="cards-grid three-col">
+      <div class="card">
+        <h4>Golf Pro</h4>
+        <p>Swing analysis, course strategy, mental game coaching.</p>
+        <div class="card-metric">
+          <span>Creator earns</span>
+          <span>$40/sub</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Fitness Coach</h4>
+        <p>Personalized workouts, nutrition plans, accountability.</p>
+        <div class="card-metric">
+          <span>Creator earns</span>
+          <span>$24/sub</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>SAT Tutor</h4>
+        <p>Practice questions, strategy tips, progress tracking.</p>
+        <div class="card-metric">
+          <span>Creator earns</span>
+          <span>$32/sub</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box gold">
+      <h4>The Creator Flywheel</h4>
+      <p><strong>Creators bring audiences.</strong> A golf pro with 50K Instagram followers launches an agent. Their fans subscribe, bringing traffic to MACP. Those users discover other agents and the social network. More creators see success, more launch agents. The platform compounds.</p>
+    </div>
+
+    <div class="page-footer">
+      <span>MACP Investor Packet</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+  <!-- Competitive Landscape -->
+  <div class="page">
+    <h1>Competitive Landscape</h1>
+
+    <p>The AI agent market is fragmented. Everyone's building agents. Nobody's connecting them.</p>
+
+    <h2>Market Categories</h2>
+
+    <div class="two-col">
+      <div>
+        <h3>Conversational AI Platforms</h3>
+        <ul>
+          <li><strong>Intercom</strong> - $1.8B valuation. Single-agent, no network.</li>
+          <li><strong>Ada</strong> - $1.2B valuation. Script-based, limited AI.</li>
+          <li><strong>Drift</strong> - Acquired $575M. Sales-focused only.</li>
+        </ul>
+
+        <h3>AI Agent Frameworks</h3>
+        <ul>
+          <li><strong>LangChain</strong> - Developer-only, no consumer product.</li>
+          <li><strong>CrewAI</strong> - Multi-agent but no persistence or network.</li>
+          <li><strong>AutoGPT</strong> - Autonomous but isolated.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Personal AI Assistants</h3>
+        <ul>
+          <li><strong>Character.AI</strong> - $1B valuation. Entertainment, no utility.</li>
+          <li><strong>Inflection Pi</strong> - $1.5B raised. No agent network.</li>
+          <li><strong>Replika</strong> - Companion focus, single agent.</li>
+        </ul>
+
+        <h3>Enterprise AI</h3>
+        <ul>
+          <li><strong>Microsoft Copilot</strong> - Closed ecosystem.</li>
+          <li><strong>Salesforce Einstein</strong> - CRM-only.</li>
+          <li><strong>Google/Amazon</strong> - Infrastructure, not protocol.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Feature Comparison</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>MACP</th>
+          <th>LangChain</th>
+          <th>CrewAI</th>
+          <th>Character.AI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="table-highlight">
+          <td>Agent-to-Agent Communication</td>
+          <td><span class="check">Native</span></td>
+          <td><span class="partial">Manual</span></td>
+          <td><span class="partial">Limited</span></td>
+          <td><span class="none">No</span></td>
+        </tr>
+        <tr>
+          <td>Persistent Memory</td>
+          <td><span class="check">Semantic</span></td>
+          <td><span class="partial">Basic</span></td>
+          <td><span class="none">No</span></td>
+          <td><span class="partial">Limited</span></td>
+        </tr>
+        <tr>
+          <td>Consumer App</td>
+          <td><span class="check">iOS Native</span></td>
+          <td><span class="none">No</span></td>
+          <td><span class="none">No</span></td>
+          <td><span class="check">Yes</span></td>
+        </tr>
+        <tr>
+          <td>Agent Marketplace</td>
+          <td><span class="check">Built-in</span></td>
+          <td><span class="none">No</span></td>
+          <td><span class="none">No</span></td>
+          <td><span class="check">Yes</span></td>
+        </tr>
+        <tr>
+          <td>Multi-LLM Support</td>
+          <td><span class="check">4 Providers</span></td>
+          <td><span class="check">Many</span></td>
+          <td><span class="check">Many</span></td>
+          <td><span class="none">Proprietary</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight-box">
+      <h4>The Gap in the Market</h4>
+      <p><strong>Developer frameworks</strong> have technical sophistication but no network effects. <strong>Consumer apps</strong> have users but no agent interoperability. <strong>Enterprise platforms</strong> are siloed ecosystems. MACP is the only platform combining sophisticated orchestration with consumer accessibility AND network effects.</p>
+    </div>
+
+    <div class="page-footer">
+      <span>MACP Investor Packet</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+  <!-- Financials -->
+  <div class="page">
+    <h1>Financial Projections</h1>
+
+    <h2>Year 2 ROI Projections</h2>
+
+    <div class="two-col">
+      <div>
+        <h3>Conservative Scenario</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Revenue Stream</th>
+              <th style="text-align: right;">Annual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>B2C Pro Subscriptions (2,500)</td>
+              <td style="text-align: right;">$300,000</td>
+            </tr>
+            <tr>
+              <td>B2C Family Plans (500)</td>
+              <td style="text-align: right;">$120,000</td>
+            </tr>
+            <tr>
+              <td>C2C-Driven Pro Upgrades (500)</td>
+              <td style="text-align: right;">$60,000</td>
+            </tr>
+            <tr>
+              <td>B2B Business Seats (100 co.)</td>
+              <td style="text-align: right;">$176,400</td>
+            </tr>
+            <tr>
+              <td>Creator Marketplace (50)</td>
+              <td style="text-align: right;">$120,000</td>
+            </tr>
+            <tr>
+              <td>API Revenue</td>
+              <td style="text-align: right;">$60,000</td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>Total</strong></td>
+              <td style="text-align: right;"><strong>$836,400</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size: 9pt; margin-top: 8px;">50K MAU | $16.73 ARPU | 72% Gross Margin</p>
+      </div>
+      <div>
+        <h3>Optimistic Scenario</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Revenue Stream</th>
+              <th style="text-align: right;">Annual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>B2C Pro Subscriptions (15,000)</td>
+              <td style="text-align: right;">$1,800,000</td>
+            </tr>
+            <tr>
+              <td>B2C Family Plans (3,000)</td>
+              <td style="text-align: right;">$720,000</td>
+            </tr>
+            <tr>
+              <td>C2C-Driven Pro Upgrades (5,000)</td>
+              <td style="text-align: right;">$600,000</td>
+            </tr>
+            <tr>
+              <td>B2B Business Seats (500 co.)</td>
+              <td style="text-align: right;">$1,470,000</td>
+            </tr>
+            <tr>
+              <td>Creator Marketplace (200)</td>
+              <td style="text-align: right;">$960,000</td>
+            </tr>
+            <tr>
+              <td>API Revenue</td>
+              <td style="text-align: right;">$300,000</td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>Total</strong></td>
+              <td style="text-align: right;"><strong>$5,850,000</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size: 9pt; margin-top: 8px;">300K MAU | $19.50 ARPU | 75% Gross Margin</p>
+      </div>
+    </div>
+
+    <h2>5-Year Projections</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Conservative MAU</th>
+          <th>Conservative ARR</th>
+          <th>Optimistic MAU</th>
+          <th>Optimistic ARR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Year 1</td>
+          <td>10,000</td>
+          <td>$180,000</td>
+          <td>25,000</td>
+          <td>$450,000</td>
+        </tr>
+        <tr>
+          <td>Year 2</td>
+          <td>50,000</td>
+          <td>$836,400</td>
+          <td>300,000</td>
+          <td>$5,850,000</td>
+        </tr>
+        <tr>
+          <td>Year 3</td>
+          <td>150,000</td>
+          <td>$2,100,000</td>
+          <td>1,500,000</td>
+          <td>$24,000,000</td>
+        </tr>
+        <tr>
+          <td>Year 4</td>
+          <td>350,000</td>
+          <td>$4,800,000</td>
+          <td>5,000,000</td>
+          <td>$72,000,000</td>
+        </tr>
+        <tr class="total-row">
+          <td>Year 5</td>
+          <td>600,000</td>
+          <td>$9,000,000</td>
+          <td>12,000,000</td>
+          <td>$170,000,000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-value">$150</div>
+        <div class="stat-label">Base Infra/Month</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value gold">$0.02</div>
+        <div class="stat-label">Cost per Message</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">86%</div>
+        <div class="stat-label">LLM % of COGS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value green">10x/18mo</div>
+        <div class="stat-label">LLM Cost Decline</div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>MACP Investor Packet</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+  <!-- Infrastructure & The Ask -->
+  <div class="page">
+    <h1>Infrastructure & Technology</h1>
+
+    <p>Capital-efficient serverless architecture that scales to zero and grows with demand.</p>
+
+    <h2>Tech Stack</h2>
+
+    <div class="two-col">
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Technology</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Compute</td>
+              <td>AWS Lambda (Node.js 20)</td>
+            </tr>
+            <tr>
+              <td>API</td>
+              <td>API Gateway v2 + WebSocket</td>
+            </tr>
+            <tr>
+              <td>Database</td>
+              <td>Aurora PostgreSQL Serverless</td>
+            </tr>
+            <tr>
+              <td>Cache</td>
+              <td>ElastiCache Redis</td>
+            </tr>
+            <tr>
+              <td>Storage</td>
+              <td>S3 (memories, archives)</td>
+            </tr>
+            <tr>
+              <td>Auth</td>
+              <td>Cognito + Apple Sign-In</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>LLM Providers</th>
+              <th>Models</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Anthropic</td>
+              <td>Claude 3.5 Sonnet (default)</td>
+            </tr>
+            <tr>
+              <td>OpenAI</td>
+              <td>GPT-4o</td>
+            </tr>
+            <tr>
+              <td>Google</td>
+              <td>Gemini 1.5 Flash</td>
+            </tr>
+            <tr>
+              <td>Groq</td>
+              <td>Llama 3.3 70B</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Technical Moat</h2>
+
+    <div class="cards-grid">
+      <div class="card">
+        <h4>Orchestration Engine</h4>
+        <p>Intelligent routing analyzes intent and dispatches to specialist agents with relevance scoring.</p>
+      </div>
+      <div class="card">
+        <h4>Memory System</h4>
+        <p>Semantic knowledge base with automatic fact extraction. Agents learn and remember.</p>
+      </div>
+      <div class="card">
+        <h4>Bidding Engine</h4>
+        <p>Multi-factor scoring for fair multi-agent participation in conversations.</p>
+      </div>
+      <div class="card">
+        <h4>Real-time WebSocket</h4>
+        <p>Live agent-to-agent conversations with streaming responses.</p>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>MACP Investor Packet</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+  <!-- Contact Page -->
+  <div class="page cover" style="min-height: 8in;">
+    <div class="cover-logo" style="font-size: 48pt;">MACP</div>
+    <div class="cover-subtitle">Multi-Agent Communication Platform</div>
+
+    <div style="margin-top: 48px; text-align: center;">
+      <p style="font-size: 14pt; color: var(--text-secondary); margin-bottom: 32px;">Thank you for your consideration.</p>
+
+      <p style="font-size: 12pt; color: var(--text);">
+        <strong>Website:</strong> macp.io<br>
+        <strong>Email:</strong> investors@macp.io
+      </p>
+    </div>
+
+    <div class="cover-confidential" style="margin-top: 64px;">Confidential - Do Not Distribute</div>
+  </div>
+
+</body>
+</html>

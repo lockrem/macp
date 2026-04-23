@@ -2,14 +2,14 @@
 set -e
 
 # MACP Deployment Script
-# Builds and deploys the P2P server using AWS CodeBuild (no local Docker required)
+# Builds and deploys the API server to AWS Lambda (no Docker required)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 PREFIX="${PREFIX:-macp-dev}"
 
 echo "=========================================="
-echo "MACP P2P Server Deployment"
+echo "MACP API Server Deployment"
 echo "=========================================="
 
 # Get AWS account info
@@ -20,138 +20,119 @@ echo "AWS Account: $AWS_ACCOUNT_ID"
 echo "AWS Region: $AWS_REGION"
 echo "Prefix: $PREFIX"
 
-# Get stack outputs
+# Step 1: Build all workspace packages
 echo ""
-echo "Fetching infrastructure details..."
+echo "Building workspace packages..."
+cd "$PROJECT_ROOT"
+pnpm install
+pnpm --filter @macp/shared build
+pnpm --filter @macp/core build
+pnpm --filter @macp/api build
 
-SOURCE_BUCKET=$(aws cloudformation describe-stacks \
-  --stack-name ${PREFIX}-build \
-  --query "Stacks[0].Outputs[?OutputKey=='SourceBucketName'].OutputValue" \
-  --output text 2>/dev/null || echo "")
-
-BUILD_PROJECT=$(aws cloudformation describe-stacks \
-  --stack-name ${PREFIX}-build \
-  --query "Stacks[0].Outputs[?OutputKey=='BuildProjectName'].OutputValue" \
-  --output text 2>/dev/null || echo "")
-
-ECR_URI=$(aws cloudformation describe-stacks \
-  --stack-name ${PREFIX}-build \
-  --query "Stacks[0].Outputs[?OutputKey=='RepositoryUri'].OutputValue" \
-  --output text 2>/dev/null || echo "")
-
-if [ -z "$SOURCE_BUCKET" ] || [ -z "$BUILD_PROJECT" ]; then
-  echo "Error: Build stack not found. Deploy it first with:"
-  echo "  cd infrastructure && npx cdk deploy ${PREFIX}-build"
-  exit 1
-fi
-
-echo "Source Bucket: $SOURCE_BUCKET"
-echo "Build Project: $BUILD_PROJECT"
-echo "ECR Repository: $ECR_URI"
-
-# Package source code
+# Step 2: Prepare Lambda deployment package
 echo ""
-echo "Packaging source code..."
+echo "Preparing Lambda deployment..."
 cd "$PROJECT_ROOT"
 
-# Create a temporary directory for the build
-BUILD_DIR=$(mktemp -d)
-trap "rm -rf $BUILD_DIR" EXIT
+# Clean up previous deployment
+rm -rf lambda-deploy
 
-# Copy necessary files
-echo "Copying files..."
-cp -r packages "$BUILD_DIR/"
-cp -r package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json turbo.json "$BUILD_DIR/"
+# Create lambda-deploy directory
+mkdir -p lambda-deploy
 
-# Create the zip file
-echo "Creating archive..."
-cd "$BUILD_DIR"
-zip -rq source.zip . -x "*.git*" -x "*node_modules*" -x "*.DS_Store"
+# Copy the built dist folders
+cp -r packages/api/dist lambda-deploy/
 
-# Upload to S3
+# Create package.json without workspace: references for npm install
+cat > lambda-deploy/package.json << 'EOF'
+{
+  "name": "@macp/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/lambda.js",
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.500.0",
+    "@aws-sdk/client-dynamodb": "^3.972.0",
+    "@aws-sdk/client-s3": "^3.500.0",
+    "@aws-sdk/client-secrets-manager": "^3.500.0",
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.500.0",
+    "@aws-sdk/lib-dynamodb": "^3.972.0",
+    "@fastify/aws-lambda": "^6.3.1",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/websocket": "^9.0.0",
+    "aws-jwt-verify": "^5.1.1",
+    "drizzle-orm": "^0.45.1",
+    "fastify": "^4.26.0",
+    "fastify-plugin": "^5.1.0",
+    "ioredis": "^5.3.0",
+    "jose": "^4.15.0",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^8.17.0",
+    "pino-pretty": "^13.1.3",
+    "postgres": "^3.4.0",
+    "ulid": "^2.3.0",
+    "zod": "^3.22.0"
+  }
+}
+EOF
+
+# Install production dependencies with npm (creates flat node_modules)
+cd lambda-deploy
+npm install --production --ignore-scripts --omit=dev
+
+# Now add workspace packages AFTER npm install
+mkdir -p node_modules/@macp/shared
+mkdir -p node_modules/@macp/core
+
+# Copy shared package (maintaining dist structure for correct main path)
+cp -r ../packages/shared/dist node_modules/@macp/shared/
+cp ../packages/shared/package.json node_modules/@macp/shared/
+
+# Copy core package (maintaining dist structure for correct main path)
+cp -r ../packages/core/dist node_modules/@macp/core/
+cp ../packages/core/package.json node_modules/@macp/core/
+
+# Go back to project root
+cd "$PROJECT_ROOT"
+
+# Step 3: Deploy using CDK
 echo ""
-echo "Uploading source to S3..."
-aws s3 cp source.zip "s3://${SOURCE_BUCKET}/source.zip"
+echo "Deploying via CDK..."
+cd "$PROJECT_ROOT/infrastructure"
 
-# Start CodeBuild
-echo ""
-echo "Starting CodeBuild..."
-BUILD_ID=$(aws codebuild start-build \
-  --project-name "$BUILD_PROJECT" \
-  --query 'build.id' \
-  --output text)
+# Deploy only the API stack (exclusively to avoid updating build stack)
+npx cdk deploy ${PREFIX}-api --exclusively --require-approval never
 
-echo "Build started: $BUILD_ID"
-echo ""
-echo "Waiting for build to complete..."
-
-# Wait for build to complete
-while true; do
-  BUILD_STATUS=$(aws codebuild batch-get-builds \
-    --ids "$BUILD_ID" \
-    --query 'builds[0].buildStatus' \
-    --output text)
-
-  BUILD_PHASE=$(aws codebuild batch-get-builds \
-    --ids "$BUILD_ID" \
-    --query 'builds[0].currentPhase' \
-    --output text)
-
-  echo "  Status: $BUILD_STATUS | Phase: $BUILD_PHASE"
-
-  if [ "$BUILD_STATUS" = "SUCCEEDED" ]; then
-    echo ""
-    echo "Build completed successfully!"
-    break
-  elif [ "$BUILD_STATUS" = "FAILED" ] || [ "$BUILD_STATUS" = "FAULT" ] || [ "$BUILD_STATUS" = "STOPPED" ]; then
-    echo ""
-    echo "Build failed with status: $BUILD_STATUS"
-    echo "Check the CodeBuild logs for details:"
-    echo "  https://${AWS_REGION}.console.aws.amazon.com/codesuite/codebuild/projects/${BUILD_PROJECT}/build/${BUILD_ID}"
-    exit 1
-  fi
-
-  sleep 10
-done
-
-# Get the image URI from the build
-IMAGE_URI="${ECR_URI}:latest"
-echo ""
-echo "Image built: $IMAGE_URI"
-
-# Update ECS service
-echo ""
-echo "Updating ECS service..."
-
-CLUSTER_NAME="${PREFIX}-cluster"
-SERVICE_NAME="${PREFIX}-api"
-
-# Force a new deployment with the latest image
-aws ecs update-service \
-  --cluster "$CLUSTER_NAME" \
-  --service "$SERVICE_NAME" \
-  --force-new-deployment \
-  --query 'service.deployments[0].status' \
-  --output text
+# Clean up
+cd "$PROJECT_ROOT"
+rm -rf lambda-deploy
 
 echo ""
 echo "=========================================="
-echo "Deployment initiated!"
+echo "Deployment Complete!"
 echo "=========================================="
-echo ""
-echo "The ECS service is updating. Monitor progress with:"
-echo "  aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME"
-echo ""
-echo "Or view in AWS Console:"
-echo "  https://${AWS_REGION}.console.aws.amazon.com/ecs/home?region=${AWS_REGION}#/clusters/${CLUSTER_NAME}/services/${SERVICE_NAME}"
-echo ""
 
 # Get the API URL
 API_URL=$(aws cloudformation describe-stacks \
   --stack-name ${PREFIX}-api \
-  --query "Stacks[0].Outputs[?contains(OutputKey,'ServiceURL')].OutputValue" \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
   --output text 2>/dev/null || echo "")
 
 if [ -n "$API_URL" ]; then
-  echo "API will be available at: $API_URL"
+  echo ""
+  echo "API URL: $API_URL"
+  echo ""
+  echo "Test the API:"
+  echo "  curl $API_URL/health"
+fi
+
+# Get the WebSocket URL
+WS_URL=$(aws cloudformation describe-stacks \
+  --stack-name ${PREFIX}-api \
+  --query "Stacks[0].Outputs[?OutputKey=='WebSocketUrl'].OutputValue" \
+  --output text 2>/dev/null || echo "")
+
+if [ -n "$WS_URL" ]; then
+  echo ""
+  echo "WebSocket URL: $WS_URL"
 fi

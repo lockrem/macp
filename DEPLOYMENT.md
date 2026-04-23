@@ -7,7 +7,6 @@ Complete guide to deploying the Multi-Agent Communication Platform to AWS.
 - AWS CLI configured with appropriate credentials
 - Node.js 20+
 - pnpm installed
-- Docker installed (for local testing)
 - Apple Developer Account (for Sign in with Apple)
 
 ## Architecture Overview
@@ -22,15 +21,14 @@ Complete guide to deploying the Multi-Agent Communication Platform to AWS.
 │  │  User Pool  │     │  ┌─────────────────────────────────┐ │   │
 │  │  + Apple    │     │  │        Public Subnets            │ │   │
 │  │   Sign-In   │     │  │  ┌───────────────────────────┐  │ │   │
-│  └──────┬──────┘     │  │  │   Application Load        │  │ │   │
-│         │            │  │  │   Balancer (ALB)          │  │ │   │
+│  └──────┬──────┘     │  │  │    API Gateway (HTTP)     │  │ │   │
 │         │            │  │  └─────────────┬─────────────┘  │ │   │
 │         │            │  └────────────────┼────────────────┘ │   │
 │         │            │  ┌────────────────┼────────────────┐ │   │
 │         │            │  │        Private Subnets          │ │   │
 │         ▼            │  │  ┌─────────────┴─────────────┐  │ │   │
-│  ┌─────────────┐     │  │  │    ECS Fargate Service    │  │ │   │
-│  │ iOS App     │◄────┼──┼──│    (MACP P2P Server)      │  │ │   │
+│  ┌─────────────┐     │  │  │     Lambda Function       │  │ │   │
+│  │ iOS App     │◄────┼──┼──│     (MACP API)            │  │ │   │
 │  │             │     │  │  └─────────────┬─────────────┘  │ │   │
 │  └─────────────┘     │  └────────────────┼────────────────┘ │   │
 │                      │  ┌────────────────┼────────────────┐ │   │
@@ -41,6 +39,14 @@ Complete guide to deploying the Multi-Agent Communication Platform to AWS.
 │                      │  │  └────────────┘ └────────────┘  │ │   │
 │                      │  └─────────────────────────────────┘ │   │
 │                      └─────────────────────────────────────────┘│
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                     S3 Buckets                           │   │
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐   │   │
+│  │  │  Memory Bucket  │  │  Archive Bucket (KMS)       │   │   │
+│  │  │  (Agent Facts)  │  │  (Conversation History)     │   │   │
+│  │  └─────────────────┘  └─────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -68,7 +74,7 @@ Complete guide to deploying the Multi-Agent Communication Platform to AWS.
 4. Enable "Sign in with Apple"
 5. Click Configure:
    - Primary App ID: Select your App ID
-   - Domains: `your-domain.com` (or your ALB domain)
+   - Domains: `your-domain.com` (or your API Gateway domain)
    - Return URLs: `https://your-domain.com/callback`
 6. Save and Register
 
@@ -164,7 +170,8 @@ pnpm cdk deploy --all
 # Or deploy individually:
 pnpm cdk deploy macp-dev-auth      # Cognito
 pnpm cdk deploy macp-dev-database  # Aurora + Redis
-pnpm cdk deploy macp-dev-api       # ECS + ALB
+pnpm cdk deploy macp-dev-build     # S3 + DynamoDB
+pnpm cdk deploy macp-dev-api       # Lambda + API Gateway
 ```
 
 ### 3.4 Note the Outputs
@@ -174,8 +181,7 @@ After deployment, note these values:
 ```
 MACPAuthStack.UserPoolId = us-east-1_XXXXXXXXX
 MACPAuthStack.UserPoolClientId = XXXXXXXXXXXXXXXXXXXXXXXXX
-MACPApiStack.ApiUrl = https://macp-dev-alb-XXXXXXXXX.us-east-1.elb.amazonaws.com
-MACPApiStack.WebSocketUrl = wss://macp-dev-alb-XXXXXXXXX.us-east-1.elb.amazonaws.com/ws
+MACPApiStack.ApiUrl = https://XXXXXXXXXX.execute-api.us-east-1.amazonaws.com
 ```
 
 ## Step 4: Configure API Keys
@@ -213,7 +219,7 @@ DATABASE_URL=$(aws secretsmanager get-secret-value \
   --query "SecretString" \
   --output text | jq -r '.connectionString')
 
-# Run migrations (via ECS Exec or bastion host)
+# Run migrations
 DATABASE_URL=$DATABASE_URL pnpm --filter @macp/core db:push
 DATABASE_URL=$DATABASE_URL pnpm --filter @macp/core db:seed
 ```
@@ -227,10 +233,8 @@ Edit `apps/ios/MACP/Sources/Networking/APIClient.swift`:
 ```swift
 #if DEBUG
 let baseURL = "http://localhost:3000"
-let wsURL = "ws://localhost:3000/ws"
 #else
-let baseURL = "https://macp-dev-alb-XXXXXXXXX.us-east-1.elb.amazonaws.com"
-let wsURL = "wss://macp-dev-alb-XXXXXXXXX.us-east-1.elb.amazonaws.com/ws"
+let baseURL = "https://XXXXXXXXXX.execute-api.us-east-1.amazonaws.com"
 #endif
 ```
 
@@ -252,9 +256,23 @@ struct CognitoConfig {
 In Xcode, add URL schemes for OAuth callback:
 - `macp` (for `macp://callback`)
 
-## Step 7: Verify Deployment
+## Step 7: Deploy Updates
 
-### 7.1 Health Check
+To deploy code changes:
+
+```bash
+# From project root
+./scripts/deploy.sh
+```
+
+This will:
+1. Build the API TypeScript code
+2. Package with production dependencies
+3. Deploy to Lambda via CDK
+
+## Step 8: Verify Deployment
+
+### 8.1 Health Check
 
 ```bash
 API_URL=$(aws cloudformation describe-stacks \
@@ -266,14 +284,7 @@ curl $API_URL/health
 # Should return: {"status":"healthy","timestamp":"...","version":"0.1.0"}
 ```
 
-### 7.2 Test WebSocket
-
-```bash
-wscat -c "$API_URL/ws?userId=test-user"
-# Should connect and receive: {"type":"connected",...}
-```
-
-### 7.3 Test API
+### 8.2 Test API
 
 ```bash
 # Create a conversation
@@ -289,15 +300,13 @@ curl -X POST $API_URL/conversations \
 
 ```bash
 # View API logs
-aws logs tail /ecs/macp-dev-api --follow
+aws logs tail /aws/lambda/macp-dev-api --follow
 ```
 
-### ECS Service Status
+### Lambda Function Status
 
 ```bash
-aws ecs describe-services \
-  --cluster macp-dev-cluster \
-  --services macp-dev-api
+aws lambda get-function --function-name macp-dev-api
 ```
 
 ## Cost Optimization
@@ -305,31 +314,28 @@ aws ecs describe-services \
 For development/testing, the infrastructure uses:
 - Aurora Serverless v2 (scales to 0.5 ACU when idle)
 - ElastiCache t4g.micro (smallest instance)
-- Fargate with 2 tasks (minimum for availability)
+- Lambda (pay-per-request, scales automatically)
+- API Gateway HTTP API (lower cost than REST API)
 - 1 NAT Gateway (instead of per-AZ)
 
-**Estimated monthly cost: ~$100-150/month**
+**Estimated monthly cost: ~$50-100/month** (lower than container-based deployment)
 
 For production, consider:
 - Reserved capacity for predictable workloads
 - Multi-AZ NAT Gateways for redundancy
 - Larger ElastiCache instances for performance
+- Provisioned concurrency for Lambda (reduces cold starts)
 
 ## Troubleshooting
 
-### ECS Task Won't Start
+### Lambda Function Errors
 
 ```bash
-# Check task logs
-aws ecs describe-tasks \
-  --cluster macp-dev-cluster \
-  --tasks <task-arn>
-
-# Check stopped task reason
-aws ecs describe-tasks \
-  --cluster macp-dev-cluster \
-  --tasks <task-arn> \
-  --query "tasks[0].stoppedReason"
+# Check recent invocations
+aws logs filter-log-events \
+  --log-group-name /aws/lambda/macp-dev-api \
+  --filter-pattern "ERROR" \
+  --limit 20
 ```
 
 ### Database Connection Issues
@@ -337,7 +343,7 @@ aws ecs describe-tasks \
 ```bash
 # Verify security groups allow access
 aws ec2 describe-security-groups \
-  --group-ids <service-sg-id> <database-sg-id>
+  --group-ids <lambda-sg-id> <database-sg-id>
 ```
 
 ### Apple Sign-In Not Working
@@ -346,6 +352,13 @@ aws ec2 describe-security-groups \
 2. Check return URLs match exactly
 3. Verify key hasn't expired
 4. Check Secrets Manager has correct values
+
+### Cold Start Issues
+
+If experiencing slow cold starts:
+1. Consider provisioned concurrency
+2. Optimize Lambda package size
+3. Keep functions warm with scheduled pings
 
 ## Cleanup
 
